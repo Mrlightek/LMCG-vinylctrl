@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VinylCTRL — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700&family=Barlow:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --lime: #C8FF00; --lime-dim: #9DCC00; --lime-glow: rgba(200,255,0,0.1);
+  --yellow: #FFD600; --white: #FFFFFF; --off-white: #E8E8E8;
+  --black: #080808; --surface-1: #111111; --surface-2: #181818; --surface-3: #222222;
+  --border: #2C2C2C; --border-lit: #3A3A3A;
+  --text-primary: #FFFFFF; --text-secondary: #999999; --text-muted: #555555; --text-on-lime: #000000;
+  --font-display: 'Barlow Condensed', sans-serif;
+  --font-body: 'Barlow', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --t-base: 0.2s ease;
+  --danger: #FF4444; --success: #00CC66; --warning: #FFB800;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font-body);background:var(--black);color:var(--text-primary);-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+a{color:inherit;text-decoration:none;}
+ul{list-style:none;}
+button{cursor:pointer;border:none;background:none;font:inherit;}
+input,textarea,select{font:inherit;}
+
+/* ── Dashboard shell ── */
+.dash { display: grid; grid-template-columns: 240px 1fr; min-height: 100svh; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  background: var(--surface-1);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; width: 240px;
+  z-index: 100; overflow-y: auto;
+}
+
+.sidebar__logo {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-display);
+  font-size: 1.3rem; font-weight: 900;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.sidebar__logo span { color: var(--lime); font-style: italic; }
+
+.sidebar__user {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.sidebar__avatar {
+  width: 36px; height: 36px;
+  background: var(--lime);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-size: 0.9rem; font-weight: 900;
+  color: var(--text-on-lime); flex-shrink: 0;
+}
+.sidebar__user-name {
+  font-size: 0.88rem; font-weight: 600; color: var(--white); line-height: 1.2;
+}
+.sidebar__user-role {
+  font-family: var(--font-mono); font-size: 0.6rem;
+  color: var(--lime); letter-spacing: 0.12em; text-transform: uppercase;
+  margin-top: 0.1rem;
+}
+
+.sidebar__nav { flex: 1; padding: 1rem 0; }
+.sidebar__nav-section {
+  padding: 0.5rem 1.5rem 0.25rem;
+  font-family: var(--font-mono); font-size: 0.58rem;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text-muted); margin-top: 0.75rem;
+}
+.sidebar__nav-item {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.6rem 1.5rem;
+  font-family: var(--font-display); font-size: 0.88rem;
+  font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--t-base);
+  position: relative;
+}
+.sidebar__nav-item:hover { color: var(--white); background: var(--surface-2); }
+.sidebar__nav-item.active {
+  color: var(--lime); background: var(--lime-glow);
+}
+.sidebar__nav-item.active::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 2px; background: var(--lime);
+}
+.sidebar__nav-icon { font-size: 1rem; flex-shrink: 0; width: 20px; text-align: center; }
+.sidebar__badge {
+  margin-left: auto;
+  background: var(--lime); color: var(--text-on-lime);
+  font-family: var(--font-mono); font-size: 0.6rem; font-weight: 500;
+  padding: 0.1rem 0.4rem; border-radius: 0;
+  min-width: 20px; text-align: center;
+}
+
+.sidebar__bottom {
+  padding: 1rem 0;
+  border-top: 1px solid var(--border);
+}
+
+/* ── MAIN CONTENT ── */
+.main {
+  margin-left: 240px;
+  display: flex; flex-direction: column;
+  min-height: 100svh;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  height: 60px;
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2rem;
+  position: sticky; top: 0; z-index: 50;
+}
+.topbar__title {
+  font-family: var(--font-display);
+  font-size: 1rem; font-weight: 800;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--white);
+}
+.topbar__right { display: flex; align-items: center; gap: 1rem; }
+.topbar__notif {
+  width: 36px; height: 36px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; cursor: pointer; position: relative;
+  transition: all var(--t-base);
+}
+.topbar__notif:hover { border-color: var(--border-lit); }
+.topbar__notif-dot {
+  position: absolute; top: 6px; right: 6px;
+  width: 6px; height: 6px; background: var(--lime);
+}
+
+/* ── PAGE BODY ── */
+.page { padding: 2rem; flex: 1; }
+
+/* ── STAT CARDS ROW ── */
+.stats-row {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 1px; background: var(--border);
+  border: 1px solid var(--border);
+  margin-bottom: 2rem;
+}
+.stat-card {
+  background: var(--surface-1);
+  padding: 1.5rem;
+  display: flex; flex-direction: column; gap: 0.5rem;
+  transition: background var(--t-base);
+}
+.stat-card:hover { background: var(--surface-2); }
+.stat-card__label {
+  font-family: var(--font-mono); font-size: 0.62rem;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--text-muted);
+}
+.stat-card__value {
+  font-family: var(--font-display);
+  font-size: 2.5rem; font-weight: 900;
+  color: var(--white); line-height: 1;
+}
+.stat-card__delta {
+  font-family: var(--font-mono); font-size: 0.68rem;
+  display: flex; align-items: center; gap: 0.3rem;
+}
+.delta-up   { color: var(--success); }
+.delta-down { color: var(--danger); }
+.stat-card__value-lime { color: var(--lime); }
+
+/* ── GRID LAYOUT ── */
+.dash-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
+  margin-bottom: 2rem;
+}
+.dash-grid--3 { grid-template-columns: 2fr 1fr 1fr; }
+
+/* ── PANELS ── */
+.panel {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+}
+.panel__header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.panel__title {
+  font-family: var(--font-display);
+  font-size: 0.88rem; font-weight: 800;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--white);
+}
+.panel__action {
+  font-family: var(--font-mono); font-size: 0.65rem;
+  letter-spacing: 0.1em; color: var(--lime); cursor: pointer;
+  transition: opacity var(--t-base);
+}
+.panel__action:hover { opacity: 0.7; }
+
+/* ── UPCOMING BOOKINGS LIST ── */
+.booking-list { display: flex; flex-direction: column; }
+.booking-item {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  transition: background var(--t-base); cursor: pointer;
+}
+.booking-item:last-child { border-bottom: none; }
+.booking-item:hover { background: var(--surface-2); }
+
+.booking-item__date {
+  width: 48px; height: 48px;
+  background: var(--surface-3);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.booking-item__date-day {
+  font-family: var(--font-display); font-size: 1.3rem; font-weight: 900; line-height: 1;
+  color: var(--lime);
+}
+.booking-item__date-month {
+  font-family: var(--font-mono); font-size: 0.55rem;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted);
+}
+
+.booking-item__info { flex: 1; min-width: 0; }
+.booking-item__venue {
+  font-family: var(--font-display); font-size: 0.95rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.04em; color: var(--white);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.booking-item__meta {
+  font-family: var(--font-mono); font-size: 0.62rem;
+  color: var(--text-muted); letter-spacing: 0.06em; margin-top: 0.2rem;
+}
+
+.booking-item__rate {
+  font-family: var(--font-display); font-size: 1rem; font-weight: 800;
+  color: var(--lime); flex-shrink: 0;
+}
+
+.status-pill {
+  padding: 0.2rem 0.6rem;
+  font-family: var(--font-mono); font-size: 0.58rem;
+  font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+  border: 1px solid; flex-shrink: 0;
+}
+.status-pill--confirmed { color: var(--success); border-color: var(--success); background: rgba(0,204,102,0.08); }
+.status-pill--pending   { color: var(--warning);  border-color: var(--warning);  background: rgba(255,184,0,0.08); }
+.status-pill--cancelled { color: var(--danger);   border-color: var(--danger);   background: rgba(255,68,68,0.08); }
+.status-pill--completed { color: var(--text-muted); border-color: var(--border); }
+
+/* ── EARNINGS CHART (CSS-only bar chart) ── */
+.chart-wrap { padding: 1.5rem; }
+.chart-bars {
+  display: flex; align-items: flex-end; gap: 6px;
+  height: 120px; margin-bottom: 0.5rem;
+}
+.chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.chart-bar {
+  width: 100%; background: var(--surface-3);
+  position: relative; min-height: 4px;
+  transition: background var(--t-base);
+  cursor: pointer;
+}
+.chart-bar:hover { background: var(--surface-2); }
+.chart-bar-fill {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: var(--lime); opacity: 0.6;
+  transition: background var(--t-base), opacity var(--t-base);
+}
+.chart-bar:hover .chart-bar-fill { opacity: 1; }
+.chart-bar-fill--active { opacity: 1; }
+.chart-month {
+  font-family: var(--font-mono); font-size: 0.55rem;
+  color: var(--text-muted); letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ── MESSAGES ── */
+.msg-list { display: flex; flex-direction: column; }
+.msg-item {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background var(--t-base);
+}
+.msg-item:last-child { border-bottom: none; }
+.msg-item:hover { background: var(--surface-2); }
+.msg-item.unread { background: rgba(200,255,0,0.03); }
+.msg-item__avatar {
+  width: 36px; height: 36px; background: var(--surface-3);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-size: 0.85rem; font-weight: 800;
+  color: var(--lime); flex-shrink: 0;
+}
+.msg-item__name {
+  font-family: var(--font-display); font-size: 0.88rem; font-weight: 700;
+  text-transform: uppercase; color: var(--white); margin-bottom: 0.2rem;
+}
+.msg-item.unread .msg-item__name { color: var(--lime); }
+.msg-item__preview {
+  font-size: 0.8rem; font-weight: 300; color: var(--text-muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 180px;
+}
+.msg-item__time {
+  font-family: var(--font-mono); font-size: 0.6rem;
+  color: var(--text-muted); margin-left: auto; flex-shrink: 0;
+}
+.msg-item__dot {
+  width: 6px; height: 6px; background: var(--lime);
+  flex-shrink: 0; margin-top: 4px;
+}
+
+/* ── QUICK ACTIONS ── */
+.quick-actions { display: flex; flex-direction: column; gap: 0.5rem; padding: 1.25rem; }
+.quick-btn {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--text-secondary); cursor: pointer;
+  font-family: var(--font-display); font-size: 0.82rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  transition: all var(--t-base);
+}
+.quick-btn:hover { border-color: var(--lime); color: var(--lime); background: var(--lime-glow); }
+.quick-btn__icon { font-size: 1rem; }
+.quick-btn__arr { margin-left: auto; transition: transform var(--t-base); }
+.quick-btn:hover .quick-btn__arr { transform: translateX(4px); }
+
+/* ── CALENDAR MINI ── */
+.cal { padding: 1.25rem; }
+.cal__header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.cal__month {
+  font-family: var(--font-display); font-size: 0.88rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--white);
+}
+.cal__nav { font-size: 0.8rem; color: var(--text-muted); cursor: pointer; }
+.cal__nav:hover { color: var(--lime); }
+.cal__grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
+.cal__day-name {
+  font-family: var(--font-mono); font-size: 0.55rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-muted); text-align: center; padding: 0.25rem 0;
+}
+.cal__day {
+  aspect-ratio: 1;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted);
+  cursor: pointer; transition: all var(--t-base);
+}
+.cal__day:hover { background: var(--surface-2); color: var(--white); }
+.cal__day--today { background: var(--lime-glow); color: var(--lime); font-weight: 700; }
+.cal__day--booked {
+  background: var(--lime); color: var(--text-on-lime); font-weight: 700;
+}
+.cal__day--other { opacity: 0.3; }
+
+/* ── Btn system ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  font-family: var(--font-display); font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  border: none; border-radius: 0; cursor: pointer;
+  transition: all var(--t-base); padding: 0.6rem 1.25rem; font-size: 0.78rem;
+}
+.btn--lime  { background: var(--lime);    color: var(--text-on-lime); }
+.btn--lime:hover  { background: var(--yellow); }
+.btn--outline { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
+.btn--outline:hover { border-color: var(--border-lit); color: var(--white); }
+
+/* ── Tabs ── */
+.tabs {
+  display: flex; gap: 0; border-bottom: 1px solid var(--border);
+  padding: 0 1.5rem;
+}
+.tab {
+  padding: 0.8rem 0; margin-right: 2rem;
+  font-family: var(--font-display); font-size: 0.8rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-muted); cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px; transition: all var(--t-base);
+}
+.tab:hover { color: var(--white); }
+.tab.active { color: var(--lime); border-bottom-color: var(--lime); }
+
+@media (max-width: 1100px) {
+  .stats-row { grid-template-columns: repeat(2,1fr); }
+  .dash-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .dash { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .main { margin-left: 0; }
+  .stats-row { grid-template-columns: repeat(2,1fr); }
+}
+</style>
+</head>
+<body>
+<div class="dash">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar__logo">Vinyl<span>CTRL</span></div>
+
+    <div class="sidebar__user">
+      <div class="sidebar__avatar">DJ</div>
+      <div>
+        <div class="sidebar__user-name">DJ Pressure</div>
+        <div class="sidebar__user-role">DJ · Pro</div>
+      </div>
+    </div>
+
+    <nav class="sidebar__nav">
+      <div class="sidebar__nav-section">Main</div>
+      <div class="sidebar__nav-item active">
+        <span class="sidebar__nav-icon">📊</span>Dashboard
+      </div>
+      <div class="sidebar__nav-item" onclick="navigate('bookings')">
+        <span class="sidebar__nav-icon">📅</span>Bookings
+        <span class="sidebar__badge">3</span>
+      </div>
+      <div class="sidebar__nav-item" onclick="navigate('gigs')">
+        <span class="sidebar__nav-icon">🎯</span>Find Gigs
+      </div>
+      <div class="sidebar__nav-item" onclick="navigate('messages')">
+        <span class="sidebar__nav-icon">💬</span>Messages
+        <span class="sidebar__badge">2</span>
+      </div>
+
+      <div class="sidebar__nav-section">Business</div>
+      <div class="sidebar__nav-item" onclick="navigate('contracts')">
+        <span class="sidebar__nav-icon">📄</span>Contracts
+      </div>
+      <div class="sidebar__nav-item" onclick="navigate('invoices')">
+        <span class="sidebar__nav-icon">💰</span>Invoices
+      </div>
+      <div class="sidebar__nav-item" onclick="navigate('analytics')">
+        <span class="sidebar__nav-icon">📈</span>Analytics
+      </div>
+
+      <div class="sidebar__nav-section">Profile</div>
+      <div class="sidebar__nav-item" onclick="navigate('profile')">
+        <span class="sidebar__nav-icon">👤</span>My Profile
+      </div>
+      <div class="sidebar__nav-item" onclick="navigate('availability')">
+        <span class="sidebar__nav-icon">🗓️</span>Availability
+      </div>
+    </nav>
+
+    <div class="sidebar__bottom">
+      <div class="sidebar__nav-item" onclick="navigate('settings')">
+        <span class="sidebar__nav-icon">⚙️</span>Settings
+      </div>
+      <div class="sidebar__nav-item">
+        <span class="sidebar__nav-icon">→</span>Sign Out
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar__title">Dashboard</div>
+      <div class="topbar__right">
+        <div class="topbar__notif">
+          🔔<div class="topbar__notif-dot"></div>
+        </div>
+        <button class="btn btn--lime">+ New Booking</button>
+      </div>
+    </div>
+
+    <div class="page">
+
+      <!-- STAT CARDS -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-card__label">This Month Earnings</div>
+          <div class="stat-card__value stat-card__value-lime">$4,800</div>
+          <div class="stat-card__delta delta-up">↑ 18% vs last month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__label">Upcoming Bookings</div>
+          <div class="stat-card__value">7</div>
+          <div class="stat-card__delta delta-up">↑ 3 new this week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__label">Pending Requests</div>
+          <div class="stat-card__value">3</div>
+          <div class="stat-card__delta" style="color:var(--warning);">⚠ Action required</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__label">Profile Views</div>
+          <div class="stat-card__value">284</div>
+          <div class="stat-card__delta delta-up">↑ 34% this week</div>
+        </div>
+      </div>
+
+      <!-- MAIN GRID -->
+      <div class="dash-grid" style="grid-template-columns: 2fr 1fr;">
+
+        <!-- Upcoming Bookings -->
+        <div class="panel">
+          <div class="panel__header">
+            <div class="panel__title">Upcoming Bookings</div>
+            <a href="#" class="panel__action">View All →</a>
+          </div>
+          <div class="tabs">
+            <div class="tab active">All</div>
+            <div class="tab" onclick="switchTab(this)">Confirmed</div>
+            <div class="tab" onclick="switchTab(this)">Pending</div>
+          </div>
+          <div class="booking-list">
+            <div class="booking-item">
+              <div class="booking-item__date">
+                <div class="booking-item__date-day">22</div>
+                <div class="booking-item__date-month">Apr</div>
+              </div>
+              <div class="booking-item__info">
+                <div class="booking-item__venue">Club Onyx — Atlanta</div>
+                <div class="booking-item__meta">Sat · 10pm–2am · Hip-Hop</div>
+              </div>
+              <div class="status-pill status-pill--confirmed">Confirmed</div>
+              <div class="booking-item__rate">$800</div>
+            </div>
+            <div class="booking-item">
+              <div class="booking-item__date">
+                <div class="booking-item__date-day">27</div>
+                <div class="booking-item__date-month">Apr</div>
+              </div>
+              <div class="booking-item__info">
+                <div class="booking-item__venue">The Velvet Room</div>
+                <div class="booking-item__meta">Thu · 9pm–1am · R&B</div>
+              </div>
+              <div class="status-pill status-pill--pending">Pending</div>
+              <div class="booking-item__rate">$600</div>
+            </div>
+            <div class="booking-item">
+              <div class="booking-item__date">
+                <div class="booking-item__date-day">03</div>
+                <div class="booking-item__date-month">May</div>
+              </div>
+              <div class="booking-item__info">
+                <div class="booking-item__venue">Compound ATL</div>
+                <div class="booking-item__meta">Fri · 11pm–4am · Hip-Hop</div>
+              </div>
+              <div class="status-pill status-pill--confirmed">Confirmed</div>
+              <div class="booking-item__rate">$1,200</div>
+            </div>
+            <div class="booking-item">
+              <div class="booking-item__date">
+                <div class="booking-item__date-day">10</div>
+                <div class="booking-item__date-month">May</div>
+              </div>
+              <div class="booking-item__info">
+                <div class="booking-item__venue">Corporate Event · Marriott</div>
+                <div class="booking-item__meta">Sat · 7pm–11pm · Top 40</div>
+              </div>
+              <div class="status-pill status-pill--pending">Pending</div>
+              <div class="booking-item__rate">$700</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right column -->
+        <div style="display:flex;flex-direction:column;gap:2rem;">
+
+          <!-- Quick Actions -->
+          <div class="panel">
+            <div class="panel__header">
+              <div class="panel__title">Quick Actions</div>
+            </div>
+            <div class="quick-actions">
+              <div class="quick-btn">
+                <span class="quick-btn__icon">🎯</span>
+                Browse Gigs
+                <span class="quick-btn__arr">→</span>
+              </div>
+              <div class="quick-btn">
+                <span class="quick-btn__icon">📄</span>
+                New Contract
+                <span class="quick-btn__arr">→</span>
+              </div>
+              <div class="quick-btn">
+                <span class="quick-btn__icon">💰</span>
+                Create Invoice
+                <span class="quick-btn__arr">→</span>
+              </div>
+              <div class="quick-btn">
+                <span class="quick-btn__icon">📢</span>
+                Promote Profile
+                <span class="quick-btn__arr">→</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mini Calendar -->
+          <div class="panel">
+            <div class="panel__header">
+              <div class="panel__title">Availability</div>
+              <a href="#" class="panel__action">Edit →</a>
+            </div>
+            <div class="cal">
+              <div class="cal__header">
+                <span class="cal__nav">‹</span>
+                <span class="cal__month">April 2025</span>
+                <span class="cal__nav">›</span>
+              </div>
+              <div class="cal__grid">
+                <div class="cal__day-name">Su</div>
+                <div class="cal__day-name">Mo</div>
+                <div class="cal__day-name">Tu</div>
+                <div class="cal__day-name">We</div>
+                <div class="cal__day-name">Th</div>
+                <div class="cal__day-name">Fr</div>
+                <div class="cal__day-name">Sa</div>
+                <!-- Week 1 -->
+                <div class="cal__day cal__day--other">30</div>
+                <div class="cal__day">1</div>
+                <div class="cal__day">2</div>
+                <div class="cal__day">3</div>
+                <div class="cal__day">4</div>
+                <div class="cal__day">5</div>
+                <div class="cal__day">6</div>
+                <!-- Week 2 -->
+                <div class="cal__day">7</div>
+                <div class="cal__day">8</div>
+                <div class="cal__day">9</div>
+                <div class="cal__day">10</div>
+                <div class="cal__day">11</div>
+                <div class="cal__day">12</div>
+                <div class="cal__day cal__day--today">13</div>
+                <!-- Week 3 -->
+                <div class="cal__day">14</div>
+                <div class="cal__day">15</div>
+                <div class="cal__day">16</div>
+                <div class="cal__day">17</div>
+                <div class="cal__day">18</div>
+                <div class="cal__day">19</div>
+                <div class="cal__day">20</div>
+                <!-- Week 4 -->
+                <div class="cal__day">21</div>
+                <div class="cal__day cal__day--booked" title="Club Onyx">22</div>
+                <div class="cal__day">23</div>
+                <div class="cal__day">24</div>
+                <div class="cal__day">25</div>
+                <div class="cal__day">26</div>
+                <div class="cal__day cal__day--booked" title="Velvet Room">27</div>
+                <!-- Week 5 -->
+                <div class="cal__day">28</div>
+                <div class="cal__day">29</div>
+                <div class="cal__day">30</div>
+                <div class="cal__day cal__day--other">1</div>
+                <div class="cal__day cal__day--other">2</div>
+                <div class="cal__day cal__day--other">3</div>
+                <div class="cal__day cal__day--other">4</div>
+              </div>
+              <div style="display:flex;gap:1rem;margin-top:1rem;align-items:center;">
+                <div style="display:flex;align-items:center;gap:0.4rem;">
+                  <div style="width:8px;height:8px;background:var(--lime);"></div>
+                  <span style="font-family:var(--font-mono);font-size:0.58rem;color:var(--text-muted);">Booked</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:0.4rem;">
+                  <div style="width:8px;height:8px;border:1px solid var(--lime);background:var(--lime-glow);"></div>
+                  <span style="font-family:var(--font-mono);font-size:0.58rem;color:var(--text-muted);">Today</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECOND ROW -->
+      <div class="dash-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+
+        <!-- Earnings Chart -->
+        <div class="panel">
+          <div class="panel__header">
+            <div class="panel__title">Earnings</div>
+            <select style="background:var(--surface-2);border:1px solid var(--border);color:var(--text-secondary);padding:0.25rem 0.5rem;font-family:var(--font-mono);font-size:0.6rem;letter-spacing:0.1em;outline:none;">
+              <option>This Year</option>
+              <option>Last Year</option>
+            </select>
+          </div>
+          <div class="chart-wrap">
+            <div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--text-muted);margin-bottom:0.75rem;letter-spacing:0.1em;">TOTAL: $28,400</div>
+            <div class="chart-bars">
+              <div class="chart-bar-wrap">
+                <div class="chart-bar" style="height:100%;">
+                  <div class="chart-bar-fill" style="height:35%;"></div>
+                </div>
+                <div class="chart-month">JAN</div>
+              </div>
+              <div class="chart-bar-wrap">
+                <div class="chart-bar" style="height:100%;">
+                  <div class="chart-bar-fill" style="height:50%;"></div>
+                </div>
+                <div class="chart-month">FEB</div>
+              </div>
+              <div class="chart-bar-wrap">
+                <div class="chart-bar" style="height:100%;">
+                  <div class="chart-bar-fill" style="height:40%;"></div>
+                </div>
+                <div class="chart-month">MAR</div>
+              </div>
+              <div class="chart-bar-wrap">
+                <div class="chart-bar" style="height:100%;">
+                  <div class="chart-bar-fill chart-bar-fill--active" style="height:80%;"></div>
+                </div>
+                <div class="chart-month" style="color:var(--lime);">APR</div>
+              </div>
+              <div class="chart-bar-wrap">
+                <div class="chart-bar" style="height:100%;">
+                  <div class="chart-bar-fill" style="height:20%;opacity:0.3;"></div>
+                </div>
+                <div class="chart-month">MAY</div>
+              </div>
+              <div class="chart-bar-wrap">
+                <div class="chart-bar" style="height:100%;opacity:0.2;"></div>
+                <div class="chart-month">JUN</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="panel">
+          <div class="panel__header">
+            <div class="panel__title">Messages</div>
+            <a href="#" class="panel__action">View All →</a>
+          </div>
+          <div class="msg-list">
+            <div class="msg-item unread">
+              <div class="msg-item__dot"></div>
+              <div class="msg-item__avatar">CV</div>
+              <div style="min-width:0;flex:1;">
+                <div class="msg-item__name">Club Velvet</div>
+                <div class="msg-item__preview">Hey, are you available for May 17th? We'd love to book...</div>
+              </div>
+              <div class="msg-item__time">2m</div>
+            </div>
+            <div class="msg-item unread">
+              <div class="msg-item__dot"></div>
+              <div class="msg-item__avatar">EO</div>
+              <div style="min-width:0;flex:1;">
+                <div class="msg-item__name">Elite Organizers</div>
+                <div class="msg-item__preview">Contract has been updated. Please review and sign...</div>
+              </div>
+              <div class="msg-item__time">1h</div>
+            </div>
+            <div class="msg-item">
+              <div style="width:6px;flex-shrink:0;"></div>
+              <div class="msg-item__avatar">CA</div>
+              <div style="min-width:0;flex:1;">
+                <div class="msg-item__name">Club Artis</div>
+                <div class="msg-item__preview">Payment sent for last Saturday's event.</div>
+              </div>
+              <div class="msg-item__time">3h</div>
+            </div>
+            <div class="msg-item">
+              <div style="width:6px;flex-shrink:0;"></div>
+              <div class="msg-item__avatar">VR</div>
+              <div style="min-width:0;flex:1;">
+                <div class="msg-item__name">Velvet Room</div>
+                <div class="msg-item__preview">Thanks for last night! Crowd loved it 🔥</div>
+              </div>
+              <div class="msg-item__time">1d</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- New Gig Matches -->
+        <div class="panel">
+          <div class="panel__header">
+            <div class="panel__title">New Matches</div>
+            <a href="#" class="panel__action">Browse →</a>
+          </div>
+          <div class="booking-list">
+            <div class="booking-item" style="flex-direction:column;align-items:flex-start;gap:0.5rem;">
+              <div style="display:flex;align-items:center;gap:0.75rem;width:100%;">
+                <div style="font-size:1.5rem;">🏟️</div>
+                <div style="flex:1;min-width:0;">
+                  <div class="booking-item__venue">Compound ATL</div>
+                  <div class="booking-item__meta">May 24 · Hip-Hop · Atlanta</div>
+                </div>
+                <div class="booking-item__rate" style="font-size:0.85rem;">$1,000</div>
+              </div>
+              <div style="display:flex;gap:0.5rem;padding-left:2.25rem;">
+                <button class="btn btn--lime" style="font-size:0.68rem;padding:0.3rem 0.75rem;">Apply</button>
+                <button class="btn btn--outline" style="font-size:0.68rem;padding:0.3rem 0.75rem;">Pass</button>
+              </div>
+            </div>
+            <div class="booking-item" style="flex-direction:column;align-items:flex-start;gap:0.5rem;">
+              <div style="display:flex;align-items:center;gap:0.75rem;width:100%;">
+                <div style="font-size:1.5rem;">🎪</div>
+                <div style="flex:1;min-width:0;">
+                  <div class="booking-item__venue">Festival — Savannah</div>
+                  <div class="booking-item__meta">Jun 1 · Multi-genre · Open</div>
+                </div>
+                <div class="booking-item__rate" style="font-size:0.85rem;">$2,500</div>
+              </div>
+              <div style="display:flex;gap:0.5rem;padding-left:2.25rem;">
+                <button class="btn btn--lime" style="font-size:0.68rem;padding:0.3rem 0.75rem;">Apply</button>
+                <button class="btn btn--outline" style="font-size:0.68rem;padding:0.3rem 0.75rem;">Pass</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /page -->
+  </div><!-- /main -->
+</div><!-- /dash -->
+
+<script>
+function navigate(section) {
+  document.querySelectorAll('.sidebar__nav-item').forEach(i => i.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.querySelector('.topbar__title').textContent = {
+    bookings:'Bookings',gigs:'Find Gigs',messages:'Messages',
+    contracts:'Contracts',invoices:'Invoices',analytics:'Analytics',
+    profile:'My Profile',availability:'Availability',settings:'Settings'
+  }[section] || 'Dashboard';
+}
+function switchTab(el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>

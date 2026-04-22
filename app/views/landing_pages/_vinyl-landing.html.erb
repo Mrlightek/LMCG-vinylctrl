@@ -1,0 +1,1660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VinylCTRL — Take CTRL of Your Gig</title>
+<meta name="description" content="VinylCTRL — Streamlined gig-matching and booking for DJs, artists, venues, and event organizers. Take CTRL of your passion.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700&family=Barlow:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   VINYLCTRL — Design System
+   Aesthetic: Electric Underground · Nightlife Tech · Raw Authority
+   Dark as a club at 2am. Sharp as a needle on vinyl.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Brand Colors ── */
+  --lime:        #C8FF00;   /* primary action — electric lime */
+  --lime-dim:    #9DCC00;   /* hover state */
+  --lime-glow:   rgba(200,255,0,0.15);
+  --yellow:      #FFD600;   /* secondary accent */
+  --white:       #FFFFFF;
+  --off-white:   #E8E8E8;
+
+  /* ── Surfaces ── */
+  --black:       #080808;
+  --surface-1:   #111111;   /* cards */
+  --surface-2:   #181818;   /* raised cards */
+  --surface-3:   #222222;   /* elevated */
+  --border:      #2C2C2C;
+  --border-lit:  #3A3A3A;
+
+  /* ── Text ── */
+  --text-primary:   #FFFFFF;
+  --text-secondary: #999999;
+  --text-muted:     #555555;
+  --text-on-lime:   #000000;
+
+  /* ── Typography ── */
+  --font-display: 'Barlow Condensed', sans-serif;
+  --font-body:    'Barlow', sans-serif;
+  --font-mono:    'DM Mono', monospace;
+
+  /* ── Spacing ── */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
+  --sp-12: 3rem;
+  --sp-16: 4rem;
+  --sp-24: 6rem;
+
+  /* ── Geometry (SHARP — minimal radius) ── */
+  --r-sm:  2px;
+  --r-md:  4px;
+  --r-pill: 2px; /* nearly square pills — this is NOT rounded UI */
+
+  /* ── Transitions ── */
+  --t-fast: 0.15s ease;
+  --t-base: 0.25s ease;
+  --t-slow: 0.4s ease;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--black);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  cursor: none; /* custom cursor */
+}
+img   { display: block; max-width: 100%; }
+a     { color: inherit; text-decoration: none; }
+ul    { list-style: none; }
+button { cursor: none; border: none; background: none; font: inherit; }
+
+/* ── Custom cursor ── */
+.cursor {
+  position: fixed;
+  width: 12px; height: 12px;
+  background: var(--lime);
+  border-radius: 0;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  transition: width 0.2s, height 0.2s, background 0.2s;
+  mix-blend-mode: difference;
+}
+.cursor.expanded { width: 40px; height: 40px; background: var(--lime); opacity: 0.4; }
+
+/* ── Grain texture overlay ── */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0.4;
+}
+
+/* ── Layout ── */
+.container { max-width: 1320px; margin: 0 auto; padding: 0 var(--sp-8); }
+
+/* ── Scrolling ticker ── */
+.ticker {
+  background: var(--lime);
+  color: var(--text-on-lime);
+  padding: 0.55rem 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.ticker__track {
+  display: inline-flex;
+  animation: ticker 28s linear infinite;
+}
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.ticker__item {
+  display: inline-flex; align-items: center; gap: 1.5rem;
+  padding: 0 2rem;
+  font-family: var(--font-display);
+  font-size: 0.82rem; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase;
+}
+.ticker__sep { opacity: 0.4; font-size: 0.6rem; }
+
+/* ═══════════════════════════════════════════════════════════════
+   NAV
+   ═══════════════════════════════════════════════════════════════ */
+
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+  padding: 1.2rem var(--sp-8);
+  display: flex; align-items: center; justify-content: space-between;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid transparent;
+}
+.nav.scrolled {
+  background: rgba(8,8,8,0.95);
+  backdrop-filter: blur(20px);
+  border-bottom-color: var(--border);
+}
+
+.nav__logo {
+  font-family: var(--font-display);
+  font-size: 1.5rem; font-weight: 900;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--white);
+  display: flex; align-items: center; gap: 0.4rem;
+}
+.nav__logo-ctrl {
+  color: var(--lime);
+  font-style: italic;
+}
+
+.nav__links {
+  display: flex; align-items: center; gap: 2.5rem;
+}
+.nav__link {
+  font-family: var(--font-display);
+  font-size: 0.82rem; font-weight: 600;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-secondary);
+  transition: color var(--t-fast);
+  position: relative;
+}
+.nav__link::after {
+  content: '';
+  position: absolute; bottom: -4px; left: 0; right: 0;
+  height: 1px; background: var(--lime);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform var(--t-base);
+}
+.nav__link:hover { color: var(--white); }
+.nav__link:hover::after { transform: scaleX(1); }
+
+.nav__actions { display: flex; align-items: center; gap: 1rem; }
+.nav__login {
+  font-family: var(--font-display);
+  font-size: 0.82rem; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-secondary);
+  transition: color var(--t-fast);
+}
+.nav__login:hover { color: var(--white); }
+
+.nav__ham { display: none; flex-direction: column; gap: 5px; padding: 4px; }
+.nav__ham span {
+  display: block; width: 22px; height: 1.5px;
+  background: var(--text-secondary); border-radius: 0;
+  transition: all 0.3s;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BUTTONS — Sharp, authoritative
+   ═══════════════════════════════════════════════════════════════ */
+
+.btn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  font-family: var(--font-display);
+  font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  border: none; border-radius: 0; cursor: none;
+  transition: all var(--t-base);
+  padding: 0.75rem 1.75rem; font-size: 0.85rem;
+  white-space: nowrap;
+}
+.btn--sm   { padding: 0.55rem 1.2rem; font-size: 0.78rem; }
+.btn--lg   { padding: 1rem 2.5rem;    font-size: 0.95rem; }
+.btn--xl   { padding: 1.2rem 3rem;    font-size: 1.05rem; }
+
+.btn--lime {
+  background: var(--lime); color: var(--text-on-lime);
+}
+.btn--lime:hover {
+  background: var(--yellow);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(200,255,0,0.3);
+}
+
+.btn--outline {
+  background: transparent; color: var(--white);
+  border: 1px solid var(--border-lit);
+}
+.btn--outline:hover {
+  border-color: var(--lime); color: var(--lime);
+  background: var(--lime-glow);
+}
+
+.btn--ghost {
+  background: transparent; color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+.btn--ghost:hover { color: var(--white); border-color: var(--border-lit); }
+
+.btn--dark {
+  background: var(--surface-2); color: var(--white);
+  border: 1px solid var(--border-lit);
+}
+.btn--dark:hover { background: var(--surface-3); border-color: var(--lime); color: var(--lime); }
+
+.btn__arr { transition: transform var(--t-base); }
+.btn:hover .btn__arr { transform: translateX(4px); }
+
+/* ═══════════════════════════════════════════════════════════════
+   HERO
+   ═══════════════════════════════════════════════════════════════ */
+
+.hero {
+  min-height: 100svh;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding-top: 80px;
+  position: relative; overflow: hidden;
+}
+
+/* Grid lines background */
+.hero__grid-bg {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(200,255,0,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200,255,0,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
+
+.hero__glow {
+  position: absolute; top: 20%; right: -10%;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(200,255,0,0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+.hero__glow2 {
+  position: absolute; bottom: 0; left: 20%;
+  width: 800px; height: 300px;
+  background: radial-gradient(ellipse, rgba(200,255,0,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero__ticker-top {
+  position: absolute; top: 80px; left: 0; right: 0;
+}
+
+.hero__content {
+  position: relative; z-index: 2;
+  padding: var(--sp-16) var(--sp-8) var(--sp-12);
+  max-width: 1320px; margin: 0 auto; width: 100%;
+}
+
+/* Giant headline */
+.hero__headline {
+  font-family: var(--font-display);
+  font-size: clamp(5rem, 13vw, 14rem);
+  font-weight: 900;
+  line-height: 0.88;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--white);
+  overflow: hidden;
+}
+
+.hero__headline-line {
+  display: block;
+  overflow: hidden;
+}
+
+.hero__headline-word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(110%);
+  animation: wordReveal 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.hero__headline-word:nth-child(1) { animation-delay: 0.1s; }
+.hero__headline-word:nth-child(2) { animation-delay: 0.25s; }
+.hero__headline-word:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes wordReveal {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hero__headline em {
+  font-style: italic;
+  color: var(--lime);
+}
+
+.hero__sub-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: var(--sp-8);
+  padding-top: var(--sp-8);
+  border-top: 1px solid var(--border);
+  gap: 3rem;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.7s forwards ease;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.hero__sub {
+  font-size: 1.05rem; font-weight: 300; line-height: 1.7;
+  color: var(--text-secondary); max-width: 380px;
+}
+.hero__sub strong { font-weight: 600; color: var(--white); }
+
+.hero__actions { display: flex; gap: 1rem; align-items: center; flex-shrink: 0; }
+
+.hero__stats {
+  display: flex; gap: 3rem; padding-left: 3rem;
+  border-left: 1px solid var(--border);
+}
+.hero__stat-num {
+  font-family: var(--font-display);
+  font-size: 2.5rem; font-weight: 900;
+  color: var(--lime); line-height: 1;
+}
+.hero__stat-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-muted); margin-top: 0.25rem;
+}
+
+/* Scrolling user types strip */
+.hero__user-types {
+  border-top: 1px solid var(--border);
+  padding: 1rem var(--sp-8);
+  display: flex; gap: 0; overflow: hidden;
+}
+.hero__user-type {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 0.5rem 2rem;
+  font-family: var(--font-display);
+  font-size: 0.78rem; font-weight: 700;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text-muted);
+  border-right: 1px solid var(--border);
+  white-space: nowrap;
+  transition: color var(--t-fast);
+}
+.hero__user-type:first-child { padding-left: 0; }
+.hero__user-type:hover { color: var(--lime); }
+.hero__user-type-dot {
+  width: 6px; height: 6px; border-radius: 0;
+  background: var(--lime); flex-shrink: 0;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   SECTIONS
+   ═══════════════════════════════════════════════════════════════ */
+
+.section { padding: var(--sp-24) 0; }
+
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--lime); margin-bottom: var(--sp-4);
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.section-label::before {
+  content: '';
+  width: 20px; height: 1px; background: var(--lime);
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-weight: 900; line-height: 0.9;
+  letter-spacing: -0.01em; text-transform: uppercase;
+  color: var(--white);
+}
+.section-title em { font-style: italic; color: var(--lime); }
+
+/* Reveal */
+.reveal {
+  opacity: 0; transform: translateY(32px);
+  transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.vis { opacity: 1; transform: none; }
+.d1 { transition-delay: 0.1s; }
+.d2 { transition-delay: 0.2s; }
+.d3 { transition-delay: 0.3s; }
+.d4 { transition-delay: 0.4s; }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   HOW IT WORKS
+   ═══════════════════════════════════════════════════════════════ */
+
+.how { background: var(--black); border-top: 1px solid var(--border); }
+
+.how__grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 6rem; align-items: start;
+}
+
+.how__steps { display: flex; flex-direction: column; gap: 0; }
+
+.how__step {
+  display: flex; gap: 1.5rem;
+  padding: 2rem 0;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  cursor: pointer;
+  transition: all var(--t-base);
+}
+.how__step:first-child { border-top: 1px solid var(--border); }
+.how__step:hover { padding-left: 1rem; }
+.how__step:hover::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 2px; background: var(--lime);
+}
+
+.how__step-num {
+  font-family: var(--font-mono);
+  font-size: 0.68rem; font-weight: 500;
+  color: var(--lime); letter-spacing: 0.1em;
+  padding-top: 0.2rem; flex-shrink: 0;
+  width: 28px;
+}
+
+.how__step-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.02em;
+  color: var(--white); margin-bottom: 0.4rem;
+  line-height: 1;
+}
+
+.how__step-desc {
+  font-size: 0.9rem; font-weight: 300;
+  color: var(--text-secondary); line-height: 1.65;
+}
+
+/* Visual panel */
+.how__visual {
+  position: sticky; top: 100px;
+  aspect-ratio: 1;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+
+.how__visual-inner {
+  width: 100%; height: 100%;
+  position: relative;
+  background:
+    linear-gradient(135deg, rgba(200,255,0,0.03) 0%, transparent 60%),
+    var(--surface-1);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 2rem; padding: 3rem;
+}
+
+/* Animated waveform */
+.waveform {
+  display: flex; align-items: center; gap: 3px;
+  height: 80px;
+}
+.waveform-bar {
+  width: 4px;
+  background: var(--lime);
+  border-radius: 0;
+  animation: wave 1.2s ease-in-out infinite;
+  opacity: 0.7;
+}
+.waveform-bar:nth-child(odd)  { animation-delay: 0.2s; }
+.waveform-bar:nth-child(3n)   { animation-delay: 0.5s; }
+.waveform-bar:nth-child(4n)   { animation-delay: 0.8s; background: var(--yellow); }
+
+@keyframes wave {
+  0%, 100% { height: 8px; }
+  50%       { height: 60px; }
+}
+
+.how__visual-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   USER ROLES — "Who is VinylCTRL for?"
+   ═══════════════════════════════════════════════════════════════ */
+
+.roles { background: var(--surface-1); border-top: 1px solid var(--border); }
+
+.roles__grid {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  border-left: 1px solid var(--border);
+}
+
+.role-card {
+  padding: 2.5rem 2rem;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 1.5rem;
+  position: relative; overflow: hidden;
+  transition: background var(--t-base);
+  cursor: pointer;
+}
+.role-card:hover { background: var(--surface-2); }
+.role-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 2px; background: var(--lime);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform var(--t-slow);
+}
+.role-card:hover::before { transform: scaleX(1); }
+
+.role-card__num {
+  font-family: var(--font-mono);
+  font-size: 0.65rem; color: var(--lime);
+  letter-spacing: 0.15em;
+}
+
+.role-card__icon {
+  font-size: 2.5rem; line-height: 1;
+}
+
+.role-card__title {
+  font-family: var(--font-display);
+  font-size: 1.8rem; font-weight: 900;
+  text-transform: uppercase; letter-spacing: 0.02em;
+  color: var(--white); line-height: 1;
+}
+
+.role-card__desc {
+  font-size: 0.88rem; font-weight: 300;
+  color: var(--text-secondary); line-height: 1.65;
+  flex: 1;
+}
+
+.role-card__features {
+  display: flex; flex-direction: column; gap: 0.4rem;
+}
+.role-card__feature {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem; color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+.role-card__feature::before { content: '→'; color: var(--lime); }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   FEATURES
+   ═══════════════════════════════════════════════════════════════ */
+
+.features { background: var(--black); border-top: 1px solid var(--border); }
+
+.features__header {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  margin-bottom: var(--sp-12); gap: 3rem;
+}
+
+.features__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: auto auto;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.feature-tile {
+  background: var(--black);
+  padding: 2.5rem;
+  transition: background var(--t-base);
+  position: relative;
+}
+.feature-tile:hover { background: var(--surface-1); }
+
+.feature-tile--large {
+  grid-column: span 2;
+  grid-row: span 1;
+}
+.feature-tile--accent { background: var(--lime); }
+.feature-tile--accent:hover { background: var(--yellow); }
+
+.feature-tile__num {
+  font-family: var(--font-mono);
+  font-size: 0.6rem; color: var(--lime);
+  letter-spacing: 0.18em; text-transform: uppercase;
+  margin-bottom: 2rem;
+}
+.feature-tile--accent .feature-tile__num { color: rgba(0,0,0,0.4); }
+
+.feature-tile__icon { font-size: 2rem; margin-bottom: 1.5rem; }
+
+.feature-tile__title {
+  font-family: var(--font-display);
+  font-size: 1.5rem; font-weight: 800;
+  text-transform: uppercase; color: var(--white);
+  line-height: 1; margin-bottom: 0.75rem;
+  letter-spacing: 0.02em;
+}
+.feature-tile--accent .feature-tile__title { color: var(--text-on-lime); }
+
+.feature-tile__desc {
+  font-size: 0.88rem; font-weight: 300;
+  color: var(--text-secondary); line-height: 1.7;
+}
+.feature-tile--accent .feature-tile__desc { color: rgba(0,0,0,0.65); }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   DJ SEARCH PREVIEW
+   ═══════════════════════════════════════════════════════════════ */
+
+.search-preview { background: var(--surface-1); border-top: 1px solid var(--border); }
+
+.search-preview__header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: var(--sp-8); gap: 3rem; flex-wrap: wrap;
+}
+
+/* Search bar mock */
+.search-bar {
+  display: flex; gap: 0;
+  border: 1px solid var(--border-lit);
+  margin-bottom: var(--sp-8);
+}
+.search-bar__input {
+  flex: 1; background: var(--surface-2);
+  border: none; outline: none;
+  padding: 1rem 1.25rem;
+  font-family: var(--font-body); font-size: 0.9rem; font-weight: 300;
+  color: var(--white);
+}
+.search-bar__input::placeholder { color: var(--text-muted); }
+.search-bar__filter {
+  background: var(--surface-3);
+  border-left: 1px solid var(--border);
+  padding: 0 1.25rem;
+  font-family: var(--font-display); font-size: 0.78rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-secondary); cursor: pointer;
+  display: flex; align-items: center; gap: 0.5rem;
+  transition: color var(--t-fast);
+}
+.search-bar__filter:hover { color: var(--lime); }
+.search-bar__btn {
+  background: var(--lime); color: var(--text-on-lime);
+  padding: 0 1.75rem;
+  font-family: var(--font-display); font-size: 0.82rem; font-weight: 800;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  cursor: pointer; border: none;
+  transition: background var(--t-fast);
+}
+.search-bar__btn:hover { background: var(--yellow); }
+
+/* Genre filter tags */
+.genre-tags {
+  display: flex; flex-wrap: wrap; gap: 0.4rem;
+  margin-bottom: var(--sp-8);
+}
+.genre-tag {
+  padding: 0.4rem 0.9rem;
+  font-family: var(--font-display); font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer; transition: all var(--t-fast);
+}
+.genre-tag:hover, .genre-tag.active {
+  border-color: var(--lime); color: var(--lime);
+  background: var(--lime-glow);
+}
+
+/* DJ Card grid */
+.dj-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.dj-card {
+  background: var(--black);
+  display: flex; flex-direction: column;
+  transition: background var(--t-base);
+  cursor: pointer;
+  position: relative; overflow: hidden;
+}
+.dj-card:hover { background: var(--surface-1); }
+.dj-card:hover .dj-card__overlay { opacity: 1; }
+
+.dj-card__image {
+  aspect-ratio: 1;
+  position: relative; overflow: hidden;
+}
+.dj-card__image-bg {
+  width: 100%; height: 100%;
+  transition: transform 0.5s ease;
+}
+.dj-card:hover .dj-card__image-bg { transform: scale(1.06); }
+
+/* CSS-art DJ photo placeholders */
+.dj-img-1 { background: linear-gradient(160deg, #1a0a2e 0%, #0d1f35 40%, #0a0a12 100%); }
+.dj-img-2 { background: linear-gradient(150deg, #0a1a0d 0%, #051205 50%, #0a0a0a 100%); }
+.dj-img-3 { background: linear-gradient(145deg, #1f0a10 0%, #2a0a0a 50%, #0a0a0a 100%); }
+.dj-img-4 { background: linear-gradient(155deg, #0a100a 0%, #0d1a10 50%, #050a05 100%); }
+
+.dj-card__image-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(8,8,8,0.9) 0%, transparent 50%);
+}
+
+.dj-card__overlay {
+  position: absolute; inset: 0;
+  background: rgba(200,255,0,0.08);
+  border: 1px solid var(--lime);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity var(--t-base);
+}
+.dj-card__overlay-btn {
+  background: var(--lime); color: var(--text-on-lime);
+  padding: 0.6rem 1.25rem;
+  font-family: var(--font-display); font-size: 0.78rem; font-weight: 800;
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+
+.dj-card__available {
+  position: absolute; top: 0.75rem; right: 0.75rem;
+  background: var(--lime); color: var(--text-on-lime);
+  font-family: var(--font-mono); font-size: 0.6rem;
+  font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 0.25rem 0.5rem;
+}
+.dj-card__available--busy {
+  background: var(--surface-3); color: var(--text-muted);
+}
+
+.dj-card__body { padding: 1.25rem; flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+
+.dj-card__name {
+  font-family: var(--font-display);
+  font-size: 1.2rem; font-weight: 800;
+  text-transform: uppercase; color: var(--white);
+  line-height: 1;
+}
+
+.dj-card__meta {
+  display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;
+}
+.dj-card__genre {
+  font-family: var(--font-mono); font-size: 0.65rem;
+  color: var(--lime); letter-spacing: 0.08em; text-transform: uppercase;
+}
+.dj-card__location {
+  font-family: var(--font-mono); font-size: 0.65rem;
+  color: var(--text-muted); letter-spacing: 0.06em;
+}
+
+.dj-card__footer {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: auto; padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+.dj-card__rate {
+  font-family: var(--font-display);
+  font-size: 1.1rem; font-weight: 800;
+  color: var(--lime);
+}
+.dj-card__rate span {
+  font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-muted); font-weight: 400;
+}
+.dj-card__rating {
+  font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-secondary);
+  display: flex; align-items: center; gap: 0.25rem;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   WAITLIST / CTA SECTION
+   ═══════════════════════════════════════════════════════════════ */
+
+.waitlist {
+  background: var(--lime); color: var(--text-on-lime);
+  padding: var(--sp-24) 0;
+  position: relative; overflow: hidden;
+}
+.waitlist::before {
+  content: 'CTRL';
+  position: absolute; right: -2rem; top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-display);
+  font-size: 28vw; font-weight: 900; font-style: italic;
+  text-transform: uppercase; opacity: 0.08; line-height: 1;
+  pointer-events: none; user-select: none; color: var(--text-on-lime);
+}
+
+.waitlist__inner { position: relative; z-index: 1; }
+
+.waitlist__label {
+  font-family: var(--font-mono); font-size: 0.68rem;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: rgba(0,0,0,0.5); margin-bottom: 1rem;
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.waitlist__label::before { content: ''; width: 20px; height: 1px; background: rgba(0,0,0,0.4); }
+
+.waitlist__title {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 8vw, 8rem);
+  font-weight: 900; line-height: 0.88;
+  text-transform: uppercase; letter-spacing: -0.01em;
+  margin-bottom: var(--sp-8);
+}
+
+.waitlist__form {
+  display: flex; gap: 0; max-width: 560px;
+  border: 2px solid rgba(0,0,0,0.2);
+}
+.waitlist__input {
+  flex: 1;
+  background: rgba(0,0,0,0.06); border: none; outline: none;
+  padding: 1rem 1.25rem;
+  font-family: var(--font-body); font-size: 0.95rem; font-weight: 300;
+  color: var(--text-on-lime);
+}
+.waitlist__input::placeholder { color: rgba(0,0,0,0.4); }
+.waitlist__submit {
+  background: var(--text-on-lime); color: var(--lime);
+  padding: 0 2rem;
+  font-family: var(--font-display); font-size: 0.82rem; font-weight: 900;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  border: none; cursor: pointer;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.waitlist__submit:hover { background: rgba(0,0,0,0.85); }
+
+.waitlist__note {
+  margin-top: 1rem;
+  font-family: var(--font-mono); font-size: 0.68rem;
+  letter-spacing: 0.08em; color: rgba(0,0,0,0.45);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   TESTIMONIALS
+   ═══════════════════════════════════════════════════════════════ */
+
+.quotes { background: var(--black); border-top: 1px solid var(--border); }
+
+.quotes__grid {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 1px; background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.quote-card {
+  background: var(--black);
+  padding: 2.5rem;
+  display: flex; flex-direction: column; gap: 1.5rem;
+  transition: background var(--t-base);
+}
+.quote-card:hover { background: var(--surface-1); }
+
+.quote-card__mark {
+  font-family: var(--font-display);
+  font-size: 4rem; font-weight: 900;
+  color: var(--lime); line-height: 0.7; opacity: 0.3;
+}
+
+.quote-card__text {
+  font-family: var(--font-display);
+  font-size: 1.15rem; font-weight: 400;
+  font-style: italic; color: var(--off-white);
+  line-height: 1.5;
+}
+
+.quote-card__author {
+  display: flex; align-items: center; gap: 0.75rem;
+  margin-top: auto; padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.quote-card__avatar {
+  width: 40px; height: 40px;
+  background: var(--surface-3);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-size: 1rem; font-weight: 800;
+  color: var(--lime); flex-shrink: 0;
+}
+
+.quote-card__name {
+  font-family: var(--font-display); font-size: 0.9rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--white);
+}
+.quote-card__role {
+  font-family: var(--font-mono); font-size: 0.65rem;
+  letter-spacing: 0.1em; color: var(--text-muted); margin-top: 0.1rem;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   FOOTER
+   ═══════════════════════════════════════════════════════════════ */
+
+.footer {
+  background: var(--surface-1);
+  border-top: 1px solid var(--border);
+  padding: var(--sp-16) 0 var(--sp-8);
+}
+
+.footer__top {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 4rem; padding-bottom: var(--sp-12);
+  border-bottom: 1px solid var(--border); margin-bottom: var(--sp-8);
+}
+
+.footer__logo {
+  font-family: var(--font-display);
+  font-size: 2rem; font-weight: 900;
+  letter-spacing: 0.04em; text-transform: uppercase; color: var(--white);
+  margin-bottom: 1rem;
+}
+.footer__logo span { color: var(--lime); font-style: italic; }
+
+.footer__tagline {
+  font-size: 0.9rem; font-weight: 300;
+  color: var(--text-muted); line-height: 1.7;
+  max-width: 260px; margin-bottom: 1.5rem;
+}
+
+.footer__social { display: flex; gap: 0.75rem; }
+.footer__social-link {
+  width: 36px; height: 36px;
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem; color: var(--text-muted);
+  transition: all var(--t-fast);
+}
+.footer__social-link:hover {
+  border-color: var(--lime); color: var(--lime);
+  background: var(--lime-glow);
+}
+
+.footer__col-title {
+  font-family: var(--font-mono);
+  font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--lime); margin-bottom: 1.25rem;
+}
+
+.footer__links { display: flex; flex-direction: column; gap: 0.65rem; }
+.footer__link {
+  font-size: 0.88rem; font-weight: 300;
+  color: var(--text-muted); transition: color var(--t-fast);
+}
+.footer__link:hover { color: var(--white); }
+
+.footer__bottom {
+  display: flex; align-items: center; justify-content: space-between;
+  font-family: var(--font-mono); font-size: 0.65rem;
+  letter-spacing: 0.1em; color: var(--text-muted);
+  flex-wrap: wrap; gap: 0.5rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1100px) {
+  .roles__grid { grid-template-columns: repeat(2,1fr); }
+  .dj-grid     { grid-template-columns: repeat(2,1fr); }
+  .footer__top { grid-template-columns: 1fr 1fr; gap: 2.5rem; }
+}
+
+@media (max-width: 768px) {
+  .container { padding: 0 1.5rem; }
+  .nav { padding: 1rem 1.5rem; }
+  .nav__links { display: none; }
+  .nav__ham   { display: flex; }
+  .hero__sub-row { flex-direction: column; gap: 1.5rem; }
+  .hero__stats { display: none; }
+  .how__grid   { grid-template-columns: 1fr; }
+  .how__visual { display: none; }
+  .roles__grid { grid-template-columns: 1fr; }
+  .features__grid { grid-template-columns: 1fr; }
+  .feature-tile--large { grid-column: span 1; }
+  .dj-grid { grid-template-columns: repeat(2,1fr); }
+  .quotes__grid { grid-template-columns: 1fr; }
+  .footer__top  { grid-template-columns: 1fr; gap: 2rem; }
+  .footer__bottom { flex-direction: column; }
+  .hero__user-types { display: none; }
+  .waitlist__form { flex-direction: column; }
+  .waitlist__submit { padding: 1rem; }
+  body { cursor: auto; }
+  .cursor { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- Custom cursor -->
+<div class="cursor" id="cursor"></div>
+
+<!-- ── Nav ────────────────────────────────────────────────────── -->
+<nav class="nav" id="nav">
+  <div class="nav__logo">
+    Vinyl<span class="nav__logo-ctrl">CTRL</span>
+  </div>
+  <div class="nav__links">
+    <a href="#how"      class="nav__link">How It Works</a>
+    <a href="#features" class="nav__link">Features</a>
+    <a href="#browse"   class="nav__link">Browse DJs</a>
+    <a href="#waitlist" class="nav__link">Join Waitlist</a>
+  </div>
+  <div class="nav__actions">
+    <a href="#" class="nav__login">Log In</a>
+    <a href="#waitlist" class="btn btn--lime btn--sm">Join Now</a>
+  </div>
+  <div class="nav__ham" onclick="toggleNav()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+
+<!-- ── Hero ───────────────────────────────────────────────────── -->
+<section class="hero" id="home">
+  <div class="hero__grid-bg"></div>
+  <div class="hero__glow"></div>
+  <div class="hero__glow2"></div>
+
+  <!-- Top ticker -->
+  <div class="hero__ticker-top ticker" style="position:absolute;top:64px;left:0;right:0;z-index:3;">
+    <div class="ticker__track">
+      <span class="ticker__item">DJs <span class="ticker__sep">✦</span></span>
+      <span class="ticker__item">Venues <span class="ticker__sep">✦</span></span>
+      <span class="ticker__item">Event Organizers <span class="ticker__sep">✦</span></span>
+      <span class="ticker__item">Independent Artists <span class="ticker__sep">✦</span></span>
+      <span class="ticker__item">Gig Matching <span class="ticker__sep">✦</span></span>
+      <span class="ticker__item">Contract Management <span class="ticker__sep">✦</span></span>
+      <span class="ticker__item">Booking Platform <span class="ticker__sep">✦</span></span>
+      <span class="ticker__item">DJs <span class="ticker__sep">✦</span></span>
+      <span class="ticker__item">Venues <span class="ticker__sep">✦</span></span>
+      <span class="ticker__item">Event Organizers <span class="ticker__sep">✦</span></span>
+      <span class="ticker__item">Independent Artists <span class="ticker__sep">✦</span></span>
+      <span class="ticker__item">Gig Matching <span class="ticker__sep">✦</span></span>
+      <span class="ticker__item">Contract Management <span class="ticker__sep">✦</span></span>
+      <span class="ticker__item">Booking Platform <span class="ticker__sep">✦</span></span>
+    </div>
+  </div>
+
+  <div class="hero__content">
+    <h1 class="hero__headline">
+      <span class="hero__headline-line">
+        <span class="hero__headline-word">Take</span>
+      </span>
+      <span class="hero__headline-line">
+        <span class="hero__headline-word"><em>CTRL</em></span>
+      </span>
+      <span class="hero__headline-line">
+        <span class="hero__headline-word">of your gig.</span>
+      </span>
+    </h1>
+
+    <div class="hero__sub-row">
+      <p class="hero__sub">
+        <strong>VinylCTRL</strong> is the platform built for the nightlife and hospitality industry. Streamlined gig-matching, bookings, promotion, and contracts — in one place.
+      </p>
+      <div class="hero__actions">
+        <a href="#waitlist" class="btn btn--lime btn--xl">Join the Waitlist <span class="btn__arr">→</span></a>
+        <a href="#how"      class="btn btn--outline btn--xl">How It Works</a>
+      </div>
+      <div class="hero__stats">
+        <div>
+          <div class="hero__stat-num">4</div>
+          <div class="hero__stat-label">User Types</div>
+        </div>
+        <div>
+          <div class="hero__stat-num">∞</div>
+          <div class="hero__stat-label">Gig Potential</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- User type strip -->
+  <div class="hero__user-types">
+    <div class="hero__user-type"><div class="hero__user-type-dot"></div>DJs</div>
+    <div class="hero__user-type"><div class="hero__user-type-dot"></div>Independent Artists</div>
+    <div class="hero__user-type"><div class="hero__user-type-dot"></div>Venues</div>
+    <div class="hero__user-type"><div class="hero__user-type-dot"></div>Event Organizers</div>
+    <div class="hero__user-type" style="border-right:none;"><div class="hero__user-type-dot"></div>Nightlife Industry</div>
+  </div>
+</section>
+
+
+<!-- ── How It Works ───────────────────────────────────────────── -->
+<section class="how section" id="how">
+  <div class="container">
+    <div class="how__grid">
+      <div>
+        <div class="section-label reveal">Process</div>
+        <h2 class="section-title reveal d1">
+          How<br><em>it works.</em>
+        </h2>
+      </div>
+      <div>
+        <div class="how__steps">
+          <div class="how__step reveal">
+            <span class="how__step-num">01</span>
+            <div>
+              <div class="how__step-title">Create Your Profile</div>
+              <div class="how__step-desc">Sign up as a DJ, artist, venue, or event organizer. Build your profile, set your rates, and showcase your work. Your profile is your brand.</div>
+            </div>
+          </div>
+          <div class="how__step reveal d1">
+            <span class="how__step-num">02</span>
+            <div>
+              <div class="how__step-title">Get Matched</div>
+              <div class="how__step-desc">Our matchmaking engine connects the right talent to the right gig. Search by genre, availability, location, and budget — or let us do it for you.</div>
+            </div>
+          </div>
+          <div class="how__step reveal d2">
+            <span class="how__step-num">03</span>
+            <div>
+              <div class="how__step-title">Book & Confirm</div>
+              <div class="how__step-desc">Send and receive booking requests. Negotiate terms, confirm availability, and lock it in — all through the platform. No back-and-forth emails.</div>
+            </div>
+          </div>
+          <div class="how__step reveal d3">
+            <span class="how__step-num">04</span>
+            <div>
+              <div class="how__step-title">Contracts & Invoices</div>
+              <div class="how__step-desc">Auto-generate professional contracts and invoices. Get paid, stay organized, and keep your business running clean.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Animated visual panel (decorative) -->
+    <div class="how__visual reveal d1" style="margin-top:4rem;aspect-ratio:auto;height:200px;background:var(--surface-1);border:1px solid var(--border);padding:2rem;display:flex;align-items:center;gap:3rem;overflow:hidden;">
+      <div class="waveform">
+        <% (1..32).each do |i| %>
+        <div class="waveform-bar" style="animation-delay:calc(#{i} * 0.08s);height:#{[8,15,30,50,40,25,12,8,45,60,35,20,10,55,40,28,15,8,42,60,38,22,12,50,35,25,10,48,58,32,20,8][i % 32]}px;"></div>
+        <% end %>
+        <!-- Pure HTML version: -->
+        <div class="waveform-bar" style="animation-delay:0s"></div>
+        <div class="waveform-bar" style="animation-delay:.1s"></div>
+        <div class="waveform-bar" style="animation-delay:.2s"></div>
+        <div class="waveform-bar" style="animation-delay:.3s"></div>
+        <div class="waveform-bar" style="animation-delay:.4s"></div>
+        <div class="waveform-bar" style="animation-delay:.5s"></div>
+        <div class="waveform-bar" style="animation-delay:.6s"></div>
+        <div class="waveform-bar" style="animation-delay:.7s"></div>
+        <div class="waveform-bar" style="animation-delay:.8s"></div>
+        <div class="waveform-bar" style="animation-delay:.9s"></div>
+        <div class="waveform-bar" style="animation-delay:1s"></div>
+        <div class="waveform-bar" style="animation-delay:1.1s"></div>
+        <div class="waveform-bar" style="animation-delay:1.2s"></div>
+        <div class="waveform-bar" style="animation-delay:.65s"></div>
+        <div class="waveform-bar" style="animation-delay:.35s"></div>
+        <div class="waveform-bar" style="animation-delay:.85s"></div>
+        <div class="waveform-bar" style="animation-delay:.15s"></div>
+        <div class="waveform-bar" style="animation-delay:.55s"></div>
+        <div class="waveform-bar" style="animation-delay:.25s"></div>
+        <div class="waveform-bar" style="animation-delay:.75s"></div>
+        <div class="waveform-bar" style="animation-delay:.45s"></div>
+        <div class="waveform-bar" style="animation-delay:.95s"></div>
+        <div class="waveform-bar" style="animation-delay:1.05s"></div>
+        <div class="waveform-bar" style="animation-delay:.05s"></div>
+      </div>
+      <div>
+        <div class="how__visual-label" style="text-align:left;font-size:1.1rem;color:var(--text-secondary);font-family:var(--font-display);font-weight:800;text-transform:uppercase;letter-spacing:0.06em;">
+          Streamlined. Automated. In control.
+        </div>
+        <div class="how__visual-label" style="text-align:left;margin-top:0.5rem;">
+          From match to paid — all on VinylCTRL.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ── User Roles ─────────────────────────────────────────────── -->
+<section class="roles section" id="roles">
+  <div class="container" style="padding:0;">
+    <div style="padding: var(--sp-8) var(--sp-8) var(--sp-4);">
+      <div class="section-label reveal">Built For</div>
+      <h2 class="section-title reveal d1">Who takes<br><em>the stage.</em></h2>
+    </div>
+    <div class="roles__grid">
+      <div class="role-card reveal">
+        <span class="role-card__num">01 / DJ</span>
+        <div class="role-card__icon">🎧</div>
+        <div class="role-card__title">DJs</div>
+        <p class="role-card__desc">Build your profile, set your rates, and get matched to the gigs you actually want. Manage bookings, contracts, and payments without the chaos.</p>
+        <div class="role-card__features">
+          <div class="role-card__feature">Smart gig matchmaking</div>
+          <div class="role-card__feature">Calendar management</div>
+          <div class="role-card__feature">Auto-generated contracts</div>
+          <div class="role-card__feature">Invoice & payment tracking</div>
+        </div>
+      </div>
+      <div class="role-card reveal d1">
+        <span class="role-card__num">02 / ARTIST</span>
+        <div class="role-card__icon">🎤</div>
+        <div class="role-card__title">Artists</div>
+        <p class="role-card__desc">Promote your talent, find performance opportunities, and grow your audience. VinylCTRL gives independent artists a professional platform to compete.</p>
+        <div class="role-card__features">
+          <div class="role-card__feature">Talent profile & portfolio</div>
+          <div class="role-card__feature">Event performance booking</div>
+          <div class="role-card__feature">Auto-marketing features</div>
+          <div class="role-card__feature">Collaboration network</div>
+        </div>
+      </div>
+      <div class="role-card reveal d2">
+        <span class="role-card__num">03 / VENUE</span>
+        <div class="role-card__icon">🏟️</div>
+        <div class="role-card__title">Venues</div>
+        <p class="role-card__desc">Find the right talent for every night. Browse verified DJs and artists, manage bookings, and keep your entertainment calendar filled and organized.</p>
+        <div class="role-card__features">
+          <div class="role-card__feature">Talent discovery & search</div>
+          <div class="role-card__feature">Event calendar management</div>
+          <div class="role-card__feature">Verified profiles only</div>
+          <div class="role-card__feature">Centralized communication</div>
+        </div>
+      </div>
+      <div class="role-card reveal d3">
+        <span class="role-card__num">04 / ORGANIZER</span>
+        <div class="role-card__icon">📋</div>
+        <div class="role-card__title">Event Organizers</div>
+        <p class="role-card__desc">Plan and execute events at scale. Source talent, coordinate logistics, manage multiple bookings, and promote events — without spreadsheets.</p>
+        <div class="role-card__features">
+          <div class="role-card__feature">Multi-event management</div>
+          <div class="role-card__feature">Talent sourcing at scale</div>
+          <div class="role-card__feature">Event promotion tools</div>
+          <div class="role-card__feature">Budget & invoice tracking</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ── Features ───────────────────────────────────────────────── -->
+<section class="features section" id="features">
+  <div class="container">
+    <div class="features__header">
+      <div>
+        <div class="section-label reveal">Platform Features</div>
+        <h2 class="section-title reveal d1">
+          Everything<br><em>in one place.</em>
+        </h2>
+      </div>
+      <p style="max-width:360px;font-size:0.95rem;font-weight:300;color:var(--text-secondary);line-height:1.75;" class="reveal d2">
+        No more juggling emails, DMs, spreadsheets, and invoices. VinylCTRL handles the business so you can focus on the music.
+      </p>
+    </div>
+
+    <div class="features__grid">
+      <div class="feature-tile feature-tile--large reveal">
+        <div class="feature-tile__num">01 — Booking Management</div>
+        <div class="feature-tile__icon">📅</div>
+        <div class="feature-tile__title">Booking & Calendar Management</div>
+        <p class="feature-tile__desc">Effortlessly manage all your bookings in one centralized platform. Avoid double-bookings, track upcoming gigs, and stay organized across every event.</p>
+      </div>
+      <div class="feature-tile feature-tile--accent reveal d1">
+        <div class="feature-tile__num" style="color:rgba(0,0,0,0.4);">02 — Matchmaking</div>
+        <div class="feature-tile__icon">🎯</div>
+        <div class="feature-tile__title">Smart Gig Matchmaking</div>
+        <p class="feature-tile__desc">Create your profile and get connected to the right gigs. Filter by genre, location, budget, and availability.</p>
+      </div>
+      <div class="feature-tile reveal d1">
+        <div class="feature-tile__num">03 — Marketing</div>
+        <div class="feature-tile__icon">📢</div>
+        <div class="feature-tile__title">Auto-Marketing Features</div>
+        <p class="feature-tile__desc">Auto-generated marketing assets to boost your event and talent visibility. Promote without a marketing team.</p>
+      </div>
+      <div class="feature-tile reveal d2">
+        <div class="feature-tile__num">04 — Contracts</div>
+        <div class="feature-tile__icon">📄</div>
+        <div class="feature-tile__title">Contract & Invoice Management</div>
+        <p class="feature-tile__desc">Generate professional contracts and invoices automatically. Protect yourself legally and get paid properly.</p>
+      </div>
+      <div class="feature-tile reveal d2">
+        <div class="feature-tile__num">05 — Communication</div>
+        <div class="feature-tile__icon">💬</div>
+        <div class="feature-tile__title">In-App Messaging</div>
+        <p class="feature-tile__desc">All booking communication stays on platform. No lost DMs, no missed emails. Every conversation tracked and searchable.</p>
+      </div>
+      <div class="feature-tile reveal d3">
+        <div class="feature-tile__num">06 — Analytics</div>
+        <div class="feature-tile__icon">📊</div>
+        <div class="feature-tile__title">Business Analytics</div>
+        <p class="feature-tile__desc">Track your earnings, gig history, and growth over time. Make smarter decisions with real data behind your hustle.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ── Browse DJs Preview ─────────────────────────────────────── -->
+<section class="search-preview section" id="browse">
+  <div class="container">
+    <div class="search-preview__header">
+      <div>
+        <div class="section-label reveal">Talent Marketplace</div>
+        <h2 class="section-title reveal d1">Browse<br><em>talent.</em></h2>
+      </div>
+      <p style="max-width:340px;font-size:0.95rem;font-weight:300;color:var(--text-secondary);line-height:1.75;align-self:flex-end;" class="reveal d2">
+        Every DJ, artist, and performer in one searchable directory. Verified, reviewed, and ready to book.
+      </p>
+    </div>
+
+    <!-- Search bar -->
+    <div class="search-bar reveal">
+      <input type="text" class="search-bar__input" placeholder="Search DJs by name, genre, city...">
+      <div class="search-bar__filter">Genre ▾</div>
+      <div class="search-bar__filter">Location ▾</div>
+      <div class="search-bar__filter">Rate ▾</div>
+      <button class="search-bar__btn">Search</button>
+    </div>
+
+    <!-- Genre tags -->
+    <div class="genre-tags reveal">
+      <span class="genre-tag active">All</span>
+      <span class="genre-tag">Hip-Hop</span>
+      <span class="genre-tag">House</span>
+      <span class="genre-tag">Afrobeats</span>
+      <span class="genre-tag">R&B / Soul</span>
+      <span class="genre-tag">Reggaeton</span>
+      <span class="genre-tag">Trap</span>
+      <span class="genre-tag">EDM</span>
+      <span class="genre-tag">Top 40</span>
+      <span class="genre-tag">Latin</span>
+      <span class="genre-tag">Dancehall</span>
+    </div>
+
+    <!-- DJ cards -->
+    <div class="dj-grid reveal">
+      <div class="dj-card">
+        <div class="dj-card__image">
+          <div class="dj-card__image-bg dj-img-1" style="height:220px;display:flex;align-items:center;justify-content:center;font-size:3rem;">🎧</div>
+          <div class="dj-card__image-overlay"></div>
+          <div class="dj-card__available">Available</div>
+          <div class="dj-card__overlay"><div class="dj-card__overlay-btn">View Profile</div></div>
+        </div>
+        <div class="dj-card__body">
+          <div class="dj-card__name">DJ Pressure</div>
+          <div class="dj-card__meta">
+            <span class="dj-card__genre">Hip-Hop · Trap</span>
+            <span class="dj-card__location">📍 Atlanta, GA</span>
+          </div>
+          <div class="dj-card__footer">
+            <div class="dj-card__rate">$400<span>/hr</span></div>
+            <div class="dj-card__rating">⭐ 4.9 (42)</div>
+          </div>
+        </div>
+      </div>
+      <div class="dj-card">
+        <div class="dj-card__image">
+          <div class="dj-card__image-bg dj-img-2" style="height:220px;display:flex;align-items:center;justify-content:center;font-size:3rem;">🎵</div>
+          <div class="dj-card__image-overlay"></div>
+          <div class="dj-card__available">Available</div>
+          <div class="dj-card__overlay"><div class="dj-card__overlay-btn">View Profile</div></div>
+        </div>
+        <div class="dj-card__body">
+          <div class="dj-card__name">Selekta Irie</div>
+          <div class="dj-card__meta">
+            <span class="dj-card__genre">Afrobeats · Dancehall</span>
+            <span class="dj-card__location">📍 Miami, FL</span>
+          </div>
+          <div class="dj-card__footer">
+            <div class="dj-card__rate">$350<span>/hr</span></div>
+            <div class="dj-card__rating">⭐ 4.8 (67)</div>
+          </div>
+        </div>
+      </div>
+      <div class="dj-card">
+        <div class="dj-card__image">
+          <div class="dj-card__image-bg dj-img-3" style="height:220px;display:flex;align-items:center;justify-content:center;font-size:3rem;">🎛️</div>
+          <div class="dj-card__image-overlay"></div>
+          <div class="dj-card__available dj-card__available--busy">Booked</div>
+          <div class="dj-card__overlay"><div class="dj-card__overlay-btn">View Profile</div></div>
+        </div>
+        <div class="dj-card__body">
+          <div class="dj-card__name">Nova Sound</div>
+          <div class="dj-card__meta">
+            <span class="dj-card__genre">House · EDM</span>
+            <span class="dj-card__location">📍 New York, NY</span>
+          </div>
+          <div class="dj-card__footer">
+            <div class="dj-card__rate">$600<span>/hr</span></div>
+            <div class="dj-card__rating">⭐ 5.0 (28)</div>
+          </div>
+        </div>
+      </div>
+      <div class="dj-card">
+        <div class="dj-card__image">
+          <div class="dj-card__image-bg dj-img-4" style="height:220px;display:flex;align-items:center;justify-content:center;font-size:3rem;">🎚️</div>
+          <div class="dj-card__image-overlay"></div>
+          <div class="dj-card__available">Available</div>
+          <div class="dj-card__overlay"><div class="dj-card__overlay-btn">View Profile</div></div>
+        </div>
+        <div class="dj-card__body">
+          <div class="dj-card__name">Lady Frequencies</div>
+          <div class="dj-card__meta">
+            <span class="dj-card__genre">R&B · Top 40</span>
+            <span class="dj-card__location">📍 Houston, TX</span>
+          </div>
+          <div class="dj-card__footer">
+            <div class="dj-card__rate">$300<span>/hr</span></div>
+            <div class="dj-card__rating">⭐ 4.7 (91)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:2rem;" class="reveal">
+      <a href="#waitlist" class="btn btn--outline btn--lg">Join to Access Full Directory <span class="btn__arr">→</span></a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ── Testimonials ───────────────────────────────────────────── -->
+<section class="quotes section">
+  <div class="container">
+    <div style="margin-bottom:var(--sp-8);">
+      <div class="section-label reveal">From The Community</div>
+      <h2 class="section-title reveal d1">Real talk,<br><em>real results.</em></h2>
+    </div>
+    <div class="quotes__grid">
+      <div class="quote-card reveal">
+        <div class="quote-card__mark">"</div>
+        <p class="quote-card__text">VinylCTRL changed how I run my business. I used to miss gigs because of scheduling conflicts. Now my whole calendar is automated. I'm booking more and stressing less.</p>
+        <div class="quote-card__author">
+          <div class="quote-card__avatar">DJ</div>
+          <div>
+            <div class="quote-card__name">DJ Marcus Webb</div>
+            <div class="quote-card__role">DJ · Chicago, IL</div>
+          </div>
+        </div>
+      </div>
+      <div class="quote-card reveal d1">
+        <div class="quote-card__mark">"</div>
+        <p class="quote-card__text">Finding reliable DJ talent used to take days of back-and-forth. Now I post a gig, get matched in minutes, and the contract is handled automatically. This is exactly what venues needed.</p>
+        <div class="quote-card__author">
+          <div class="quote-card__avatar">VN</div>
+          <div>
+            <div class="quote-card__name">Maya Torres</div>
+            <div class="quote-card__role">Venue Manager · Miami, FL</div>
+          </div>
+        </div>
+      </div>
+      <div class="quote-card reveal d2">
+        <div class="quote-card__mark">"</div>
+        <p class="quote-card__text">As an independent artist I always felt invisible. VinylCTRL gave me the same professional tools the big names have. My bookings have tripled and I finally feel like I'm running a real business.</p>
+        <div class="quote-card__author">
+          <div class="quote-card__avatar">KA</div>
+          <div>
+            <div class="quote-card__name">Kezia Amara</div>
+            <div class="quote-card__role">Artist · Atlanta, GA</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ── Waitlist CTA ───────────────────────────────────────────── -->
+<section class="waitlist" id="waitlist">
+  <div class="container">
+    <div class="waitlist__inner">
+      <div class="waitlist__label">Limited Early Access</div>
+      <h2 class="waitlist__title">
+        Join the<br>Waitlist.
+      </h2>
+      <form class="waitlist__form" onsubmit="handleWaitlist(event)">
+        <input type="email" class="waitlist__input" placeholder="Your email address" required>
+        <button type="submit" class="waitlist__submit">Get Early Access →</button>
+      </form>
+      <p class="waitlist__note">No spam. No credit card. Just early access to the platform built for the culture.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ── Footer ─────────────────────────────────────────────────── -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer__top">
+      <div>
+        <div class="footer__logo">Vinyl<span>CTRL</span></div>
+        <p class="footer__tagline">Streamlined gig-matchmaking and booking for the nightlife and hospitality industry.</p>
+        <div class="footer__social">
+          <a href="https://www.instagram.com/vinylctrl.app" target="_blank" class="footer__social-link" title="Instagram">📸</a>
+          <a href="https://www.linkedin.com/company/vinylctrl/" target="_blank" class="footer__social-link" title="LinkedIn">💼</a>
+          <a href="http://www.tiktok.com/vinylctrl.app" target="_blank" class="footer__social-link" title="TikTok">🎵</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer__col-title">Platform</div>
+        <ul class="footer__links">
+          <li><a href="#" class="footer__link">How It Works</a></li>
+          <li><a href="#" class="footer__link">Features</a></li>
+          <li><a href="#" class="footer__link">Browse DJs</a></li>
+          <li><a href="#" class="footer__link">Join Waitlist</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer__col-title">For</div>
+        <ul class="footer__links">
+          <li><a href="#" class="footer__link">DJs</a></li>
+          <li><a href="#" class="footer__link">Artists</a></li>
+          <li><a href="#" class="footer__link">Venues</a></li>
+          <li><a href="#" class="footer__link">Event Organizers</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer__col-title">Company</div>
+        <ul class="footer__links">
+          <li><a href="#" class="footer__link">About</a></li>
+          <li><a href="#" class="footer__link">Contact</a></li>
+          <li><a href="#" class="footer__link">Privacy Policy</a></li>
+          <li><a href="#" class="footer__link">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2025 VinylCTRL. All rights reserved.</span>
+      <span>Built for creatives, by creatives. 🎵</span>
+    </div>
+  </div>
+</footer>
+
+
+<script>
+/* Custom cursor */
+const cursor = document.getElementById('cursor');
+if (cursor) {
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top  = e.clientY + 'px';
+  });
+  document.querySelectorAll('a, button, .dj-card, .role-card, .feature-tile, .how__step').forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.classList.add('expanded'));
+    el.addEventListener('mouseleave', () => cursor.classList.remove('expanded'));
+  });
+}
+
+/* Nav scroll */
+window.addEventListener('scroll', () => {
+  document.getElementById('nav').classList.toggle('scrolled', scrollY > 60);
+}, { passive: true });
+
+/* Reveal on scroll */
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+/* Genre filter */
+document.querySelectorAll('.genre-tag').forEach(tag => {
+  tag.addEventListener('click', () => {
+    document.querySelectorAll('.genre-tag').forEach(t => t.classList.remove('active'));
+    tag.classList.add('active');
+  });
+});
+
+/* Waitlist form */
+function handleWaitlist(e) {
+  e.preventDefault();
+  const btn = e.target.querySelector('.waitlist__submit');
+  btn.textContent = '✓ You\'re on the list!';
+  btn.style.background = '#000';
+  e.target.querySelector('.waitlist__input').value = '';
+  setTimeout(() => { btn.textContent = 'Get Early Access →'; btn.style.background = ''; }, 4000);
+}
+
+/* Mobile nav */
+function toggleNav() {
+  const links = document.querySelector('.nav__links');
+  const isOpen = links.dataset.open === '1';
+  if (isOpen) {
+    links.style.cssText = '';
+    links.dataset.open = '0';
+  } else {
+    links.style.cssText = `
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:2.5rem;position:fixed;inset:0;
+      background:rgba(8,8,8,0.98);backdrop-filter:blur(20px);
+      z-index:400;animation:navIn 0.25s ease;
+    `;
+    links.dataset.open = '1';
+    links.querySelectorAll('a').forEach(a => {
+      a.style.cssText = 'font-size:2.5rem;color:var(--white);font-weight:900;text-transform:uppercase;letter-spacing:0.06em;';
+      a.onclick = () => { links.style.cssText = ''; links.dataset.open = '0'; };
+    });
+  }
+}
+const s = document.createElement('style');
+s.textContent = '@keyframes navIn { from{opacity:0} to{opacity:1} }';
+document.head.appendChild(s);
+</script>
+</body>
+</html>
