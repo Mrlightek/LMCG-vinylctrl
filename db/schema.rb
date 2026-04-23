@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_22_220958) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_23_185426) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -49,14 +49,94 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_22_220958) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "bookings", force: :cascade do |t|
+    t.integer "talent_id", null: false
+    t.integer "client_id", null: false
+    t.string "status", default: "pending", null: false
+    t.string "venue_name", null: false
+    t.string "venue_address"
+    t.date "event_date", null: false
+    t.time "start_time"
+    t.time "end_time"
+    t.string "event_type"
+    t.string "genre"
+    t.decimal "agreed_rate", precision: 10, scale: 2
+    t.text "notes"
+    t.text "client_notes"
+    t.string "reference"
+    t.boolean "contract_signed", default: false
+    t.boolean "invoice_paid", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["client_id", "event_date"], name: "index_bookings_on_client_id_and_event_date"
+    t.index ["client_id"], name: "index_bookings_on_client_id"
+    t.index ["event_date"], name: "index_bookings_on_event_date"
+    t.index ["status"], name: "index_bookings_on_status"
+    t.index ["talent_id", "event_date"], name: "index_bookings_on_talent_id_and_event_date"
+    t.index ["talent_id"], name: "index_bookings_on_talent_id"
+  end
+
   create_table "dashboards", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
+  create_table "gigs", force: :cascade do |t|
+    t.integer "posted_by_id", null: false
+    t.string "title", null: false
+    t.text "description"
+    t.string "venue_name"
+    t.string "venue_city"
+    t.string "venue_state"
+    t.date "event_date"
+    t.time "start_time"
+    t.time "end_time"
+    t.json "genres", default: []
+    t.decimal "budget", precision: 10, scale: 2
+    t.string "status", default: "open"
+    t.date "application_deadline"
+    t.boolean "featured", default: false
+    t.integer "views_count", default: 0
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_date"], name: "index_gigs_on_event_date"
+    t.index ["genres"], name: "index_gigs_on_genres"
+    t.index ["posted_by_id"], name: "index_gigs_on_posted_by_id"
+    t.index ["status"], name: "index_gigs_on_status"
+  end
+
   create_table "landing_pages", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "profiles", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "slug", null: false
+    t.string "bio_name"
+    t.text "bio"
+    t.string "tagline"
+    t.integer "hourly_rate"
+    t.json "genres", default: []
+    t.string "equipment"
+    t.string "website"
+    t.string "instagram"
+    t.string "soundcloud"
+    t.string "youtube"
+    t.boolean "published", default: false
+    t.boolean "available", default: true
+    t.boolean "featured", default: false
+    t.float "average_rating", default: 0.0
+    t.integer "total_bookings", default: 0
+    t.json "settings", default: {}
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["available"], name: "index_profiles_on_available"
+    t.index ["average_rating"], name: "index_profiles_on_average_rating"
+    t.index ["genres"], name: "index_profiles_on_genres"
+    t.index ["published"], name: "index_profiles_on_published"
+    t.index ["slug"], name: "index_profiles_on_slug", unique: true
+    t.index ["user_id"], name: "index_profiles_on_user_id"
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -73,10 +153,22 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_22_220958) do
     t.string "password_digest", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "first_name", default: "", null: false
+    t.string "last_name", default: "", null: false
+    t.string "user_type", default: "dj", null: false
+    t.string "phone"
+    t.string "city"
+    t.string "state"
+    t.string "plan", default: "free"
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
+    t.index ["user_type"], name: "index_users_on_user_type"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "bookings", "users", column: "client_id"
+  add_foreign_key "bookings", "users", column: "talent_id"
+  add_foreign_key "gigs", "users", column: "posted_by_id"
+  add_foreign_key "profiles", "users"
   add_foreign_key "sessions", "users"
 end
