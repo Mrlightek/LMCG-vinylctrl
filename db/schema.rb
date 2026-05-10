@@ -100,7 +100,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_23_185426) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["event_date"], name: "index_gigs_on_event_date"
-    t.index ["genres"], name: "index_gigs_on_genres"
     t.index ["posted_by_id"], name: "index_gigs_on_posted_by_id"
     t.index ["status"], name: "index_gigs_on_status"
   end
@@ -133,7 +132,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_23_185426) do
     t.datetime "updated_at", null: false
     t.index ["available"], name: "index_profiles_on_available"
     t.index ["average_rating"], name: "index_profiles_on_average_rating"
-    t.index ["genres"], name: "index_profiles_on_genres"
     t.index ["published"], name: "index_profiles_on_published"
     t.index ["slug"], name: "index_profiles_on_slug", unique: true
     t.index ["user_id"], name: "index_profiles_on_user_id"
