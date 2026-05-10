@@ -52,7 +52,7 @@ gem "aws-sdk-s3", require: false
 # PWA push notifications
 gem "webpush"
 
-gem "connection_pool", ">= 3.0.3"
+gem "connection_pool", "2.5.5"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
