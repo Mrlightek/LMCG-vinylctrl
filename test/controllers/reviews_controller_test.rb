@@ -2,47 +2,45 @@ require "test_helper"
 
 class ReviewsControllerTest < ActionDispatch::IntegrationTest
   setup do
-    @review = reviews(:one)
+    @user = users(:one)
+    sign_in_as @user
+
+    @profile = Profile.create!(
+      user: users(:two),
+      slug: "review-test-profile"
+    )
   end
 
-  test "should get index" do
-    get reviews_url
-    assert_response :success
-  end
-
-  test "should get new" do
-    get new_review_url
-    assert_response :success
-  end
-
-  test "should create review" do
-    assert_difference("Review.count") do
-      post reviews_url, params: { review: { body: @review.body, rating: @review.rating, reviewable_id: @review.reviewable_id, reviewable_type: @review.reviewable_type, user_id: @review.user_id } }
+  test "should create review for profile" do
+    assert_difference("Review.count", 1) do
+      post profile_reviews_url(@profile), params: {
+        review: {
+          rating: 5,
+          body: "Excellent experience."
+        }
+      }
     end
 
-    assert_redirected_to review_url(Review.last)
+    review = Review.order(:created_at).last
+
+    assert_equal @profile, review.reviewable
+    assert_equal @user, review.user
+    assert_equal 5, review.rating
+    assert_redirected_to profile_url(@profile)
   end
 
-  test "should show review" do
-    get review_url(@review)
-    assert_response :success
-  end
+  test "should require authentication" do
+    delete session_url
 
-  test "should get edit" do
-    get edit_review_url(@review)
-    assert_response :success
-  end
-
-  test "should update review" do
-    patch review_url(@review), params: { review: { body: @review.body, rating: @review.rating, reviewable_id: @review.reviewable_id, reviewable_type: @review.reviewable_type, user_id: @review.user_id } }
-    assert_redirected_to review_url(@review)
-  end
-
-  test "should destroy review" do
-    assert_difference("Review.count", -1) do
-      delete review_url(@review)
+    assert_no_difference("Review.count") do
+      post profile_reviews_url(@profile), params: {
+        review: {
+          rating: 5,
+          body: "Excellent experience."
+        }
+      }
     end
 
-    assert_redirected_to reviews_url
+    assert_redirected_to new_session_url
   end
 end

@@ -2,6 +2,7 @@ require "test_helper"
 
 class DashboardsControllerTest < ActionDispatch::IntegrationTest
   setup do
+    sign_in_as users(:one)
     @dashboard = dashboards(:one)
   end
 
