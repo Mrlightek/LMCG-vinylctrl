@@ -1,0 +1,3 @@
+<h1>You have a new booking request</h1>
+<p><%= @booking.client.full_name %> requested <%= @booking.event_date.to_fs(:long) %> at <%= @booking.venue_name %>.</p>
+<p>Reference: <strong><%= @booking.reference %></strong></p>
