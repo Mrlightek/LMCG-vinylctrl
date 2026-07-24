@@ -1,0 +1,6 @@
+<% content_for :title, "Create Profile · VinylCTRL" %>
+<%= stylesheet_link_tag "profiles", "data-turbo-track": "reload" %>
+<main class="profiles profiles--form">
+  <header class="profile-page-heading"><p class="profile-eyebrow">Profile setup</p><h1>Build your <em>presence.</em></h1><p>Create the page clients use to discover and book you.</p></header>
+  <%= render "form", profile: @profile %>
+</main>

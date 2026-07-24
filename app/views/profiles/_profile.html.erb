@@ -1,0 +1,33 @@
+<article class="profile-card">
+  <%= link_to profile_path(profile.slug), class: "profile-card__media" do %>
+    <% if profile.avatar.attached? %>
+      <%= image_tag profile.avatar.variant(resize_to_fill: [720, 540]), alt: profile.display_name %>
+    <% else %>
+      <div class="profile-card__fallback"><%= profile.display_name.to_s.first(2).upcase %></div>
+    <% end %>
+    <% if profile.featured? %><span class="profile-badge">Featured</span><% end %>
+    <span class="profile-availability <%= "is-offline" unless profile.available? %>">
+      <i></i><%= profile.available? ? "Available" : "Unavailable" %>
+    </span>
+  <% end %>
+
+  <div class="profile-card__body">
+    <div class="profile-card__topline">
+      <div>
+        <p class="profile-eyebrow"><%= profile.user.user_type.to_s.presence || "Talent" %></p>
+        <h2><%= link_to profile.display_name, profile_path(profile.slug) %></h2>
+      </div>
+      <strong><%= profile.rate_display %></strong>
+    </div>
+    <p class="profile-location">⌖ <%= profile.location.presence || "Location on request" %></p>
+    <div class="profile-tags">
+      <% Array(profile.genres).first(4).each do |genre| %>
+        <span><%= genre.titleize %></span>
+      <% end %>
+    </div>
+    <div class="profile-card__footer">
+      <span>★ <%= profile.average_rating %> <small>(<%= profile.review_count %>)</small></span>
+      <%= link_to "View profile →", profile_path(profile.slug), class: "profile-text-link" %>
+    </div>
+  </div>
+</article>

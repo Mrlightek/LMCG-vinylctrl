@@ -17,6 +17,10 @@ class User < ApplicationRecord
   has_many :gig_applications
   has_many :contracts,  foreign_key: :talent_id
   has_many :invoices,   foreign_key: :issuer_id
+  has_many :profile_views,
+         foreign_key: :viewer_id,
+         inverse_of: :viewer,
+         dependent: :nullify
 
   validates :user_type, inclusion: { in: USER_TYPES }
   validates :first_name, :last_name, presence: true

@@ -1,0 +1,56 @@
+<% content_for :title, "#{@profile.display_name} · VinylCTRL" %>
+<%= stylesheet_link_tag "profiles", "data-turbo-track": "reload" %>
+
+<main class="profiles">
+  <div class="profile-show__crumb"><%= link_to "Talent", profiles_path %><span>/</span><%= @profile.display_name %></div>
+
+  <header class="profile-show__hero">
+    <div class="profile-show__portrait">
+      <% if @profile.avatar.attached? %>
+        <%= image_tag @profile.avatar.variant(resize_to_fill: [1000, 900]), alt: @profile.display_name %>
+      <% else %>
+        <div class="profile-card__fallback"><%= @profile.display_name.to_s.first(2).upcase %></div>
+      <% end %>
+    </div>
+    <div class="profile-show__intro">
+      <p class="profile-eyebrow"><%= @profile.user.user_type.to_s.presence || "Talent" %> · <%= @profile.location.presence || "Location on request" %></p>
+      <h1><%= @profile.display_name %></h1>
+      <div class="profile-show__rating">★ <strong><%= @profile.average_rating %></strong> <span><%= pluralize(@profile.review_count, "review") %></span></div>
+      <div class="profile-tags"><% Array(@profile.genres).each do |genre| %><span><%= genre.titleize %></span><% end %></div>
+      <% if @profile.respond_to?(:bio) && @profile.bio.present? %><p class="profile-show__bio"><%= simple_format(@profile.bio) %></p><% end %>
+      <% if authenticated? && @profile.user == Current.user %>
+        <div class="profile-show__owner-actions">
+          <%= link_to "Edit profile", edit_profile_path(@profile.slug), class: "profile-btn profile-btn--lime" %>
+          <%= button_to "Delete", profile_path(@profile.slug), method: :delete, class: "profile-btn profile-btn--danger", form: { data: { turbo_confirm: "Delete this profile permanently?" } } %>
+        </div>
+      <% end %>
+    </div>
+    <aside class="profile-booking-card">
+      <p class="profile-eyebrow">Book this artist</p>
+      <strong><%= @profile.rate_display %></strong>
+      <span class="profile-availability <%= "is-offline" unless @profile.available? %>"><i></i><%= @profile.available? ? "Currently available" : "Not accepting bookings" %></span>
+      <% if authenticated? && @booking %>
+        <%= form_with model: @booking do |form| %>
+          <%= form.hidden_field :profile_id, value: @profile.id %>
+          <%= form.label :event_date, "Event date" %><%= form.date_field :event_date %>
+          <%= form.label :message, "Tell them about the event" %><%= form.text_area :message, rows: 4 %>
+          <%= form.submit "Request booking →", class: "profile-btn profile-btn--lime", disabled: !@profile.available? %>
+        <% end %>
+      <% else %>
+        <%= link_to "Sign in to book →", new_user_session_path, class: "profile-btn profile-btn--lime" %>
+      <% end %>
+    </aside>
+  </header>
+
+  <% if @profile.photos.attached? %>
+    <section class="profile-section"><div class="profile-section__heading"><span>01</span><h2>Gallery</h2></div>
+      <div class="profile-gallery"><% @profile.photos.each do |photo| %><%= image_tag photo.variant(resize_to_fill: [900, 700]), alt: "" %><% end %></div>
+    </section>
+  <% end %>
+
+  <section class="profile-section"><div class="profile-section__heading"><span>02</span><h2>Client reviews</h2></div>
+    <% if @reviews.any? %>
+      <div class="profile-reviews"><% @reviews.each do |review| %><article><div>★ <%= review.rating %>.0</div><p><%= review.respond_to?(:body) ? review.body : review.try(:comment) %></p><small><%= review.user.try(:full_name) || "Verified client" %> · <%= review.created_at.strftime("%b %Y") %></small></article><% end %></div>
+    <% else %><div class="profile-empty profile-empty--compact"><p>No reviews yet.</p></div><% end %>
+  </section>
+</main>

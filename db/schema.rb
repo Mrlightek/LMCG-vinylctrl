@@ -10,7 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_23_185426) do
+ActiveRecord::Schema[8.0].define(version: 2026_07_24_195543) do
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "pg_catalog.plpgsql"
+
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -109,6 +112,19 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_23_185426) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "profile_views", force: :cascade do |t|
+    t.bigint "profile_id", null: false
+    t.bigint "viewer_id"
+    t.string "visitor_key", null: false
+    t.date "viewed_on", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["profile_id", "viewed_on"], name: "index_profile_views_by_profile_and_date"
+    t.index ["profile_id", "visitor_key", "viewed_on"], name: "index_unique_daily_profile_views", unique: true
+    t.index ["profile_id"], name: "index_profile_views_on_profile_id"
+    t.index ["viewer_id"], name: "index_profile_views_on_viewer_id"
+  end
+
   create_table "profiles", force: :cascade do |t|
     t.integer "user_id", null: false
     t.string "slug", null: false
@@ -130,11 +146,25 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_23_185426) do
     t.json "settings", default: {}
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "view_count", default: 0, null: false
     t.index ["available"], name: "index_profiles_on_available"
     t.index ["average_rating"], name: "index_profiles_on_average_rating"
     t.index ["published"], name: "index_profiles_on_published"
     t.index ["slug"], name: "index_profiles_on_slug", unique: true
     t.index ["user_id"], name: "index_profiles_on_user_id"
+    t.index ["view_count"], name: "index_profiles_on_view_count"
+  end
+
+  create_table "reviews", force: :cascade do |t|
+    t.string "reviewable_type", null: false
+    t.bigint "reviewable_id", null: false
+    t.bigint "user_id", null: false
+    t.integer "rating"
+    t.text "body"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["reviewable_type", "reviewable_id"], name: "index_reviews_on_reviewable"
+    t.index ["user_id"], name: "index_reviews_on_user_id"
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -167,6 +197,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_23_185426) do
   add_foreign_key "bookings", "users", column: "client_id"
   add_foreign_key "bookings", "users", column: "talent_id"
   add_foreign_key "gigs", "users", column: "posted_by_id"
+  add_foreign_key "profile_views", "profiles"
+  add_foreign_key "profile_views", "users", column: "viewer_id"
   add_foreign_key "profiles", "users"
+  add_foreign_key "reviews", "users"
   add_foreign_key "sessions", "users"
 end

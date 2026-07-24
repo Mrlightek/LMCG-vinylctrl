@@ -5,8 +5,9 @@ class Profile < ApplicationRecord
   has_many_attached :photos
   has_one_attached  :avatar
 
-  has_many :reviews, as: :reviewable
+  has_many :reviews, as: :reviewable, dependent: :destroy
   has_many :availabilities
+  has_many :profile_views, dependent: :destroy
 
   validates :slug, uniqueness: true, presence: true
 

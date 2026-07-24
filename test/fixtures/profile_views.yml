@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  profile: one
+  viewer: one
+  visitor_key: MyString
+  viewed_on: 2026-07-24
+
+two:
+  profile: two
+  viewer: two
+  visitor_key: MyString
+  viewed_on: 2026-07-24

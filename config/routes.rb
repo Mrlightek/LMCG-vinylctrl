@@ -1,7 +1,11 @@
 Rails.application.routes.draw do
+  resources :profiles, param: :slug do
+  resources :reviews, only: %i[create update destroy]
+end
   resources :landing_pages
   resources :dashboards
   resource :session
+  resources :profiles, param: :slug
   resources :passwords, param: :token
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -22,6 +26,8 @@ Rails.application.routes.draw do
   get "/contact",      to: "pages#contact",   as: :contact
   get "/privacy",      to: "pages#privacy",   as: :privacy
   get "/terms",        to: "pages#terms",     as: :terms
+  get "profiles", to: "profiles#show"
+  get "bookings", to: "booking#index"
 
     # Waitlist
   resources :waitlist_entries, only: [:create]
@@ -82,6 +88,7 @@ end
 # # ── config/routes.rb ────────────────────────────────────────────
 
 # Rails.application.routes.draw do
+  #resources :reviews
 #   root "pages#home"
 
 

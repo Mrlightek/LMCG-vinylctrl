@@ -1,0 +1,6 @@
+<% content_for :title, "Edit #{@profile.display_name} · VinylCTRL" %>
+<%= stylesheet_link_tag "profiles", "data-turbo-track": "reload" %>
+<main class="profiles profiles--form">
+  <header class="profile-page-heading"><p class="profile-eyebrow">Profile control</p><h1>Edit your <em>profile.</em></h1><p>Keep your identity, media, rates, and availability current.</p></header>
+  <%= render "form", profile: @profile %>
+</main>

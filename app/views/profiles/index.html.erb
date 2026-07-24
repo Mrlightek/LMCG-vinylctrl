@@ -1,0 +1,39 @@
+<% content_for :title, "Find Talent · VinylCTRL" %>
+<%= stylesheet_link_tag "profiles", "data-turbo-track": "reload" %>
+
+<main class="profiles">
+  <header class="profiles-hero">
+    <div>
+      <p class="profile-eyebrow">VinylCTRL talent network</p>
+      <h1>Find the right <em>sound.</em></h1>
+      <p>Book DJs and music professionals who fit the room, the crowd, and the moment.</p>
+    </div>
+    <% if authenticated? %>
+      <%= link_to "Create profile +", new_profile_path, class: "profile-btn profile-btn--lime" %>
+    <% end %>
+  </header>
+
+  <%= form_with url: profiles_path, method: :get, class: "profile-filters" do |form| %>
+    <div class="profile-field"><%= form.label :type, "Talent type" %><%= form.select :type, options_for_select([["All types", ""]] + User.distinct.pluck(:user_type).compact.map { |v| [v.titleize, v] }, params[:type]) %></div>
+    <div class="profile-field"><%= form.label :genre, "Genre" %><%= form.select :genre, options_for_select([["All genres", ""]] + @genres.map { |v| [v.titleize, v] }, params[:genre]) %></div>
+    <div class="profile-field"><%= form.label :city, "City" %><%= form.text_field :city, value: params[:city], placeholder: "Atlanta" %></div>
+    <div class="profile-field"><%= form.label :max_rate, "Max hourly rate" %><%= form.number_field :max_rate, value: params[:max_rate], min: 0, placeholder: "500" %></div>
+    <%= form.submit "Search", class: "profile-btn profile-btn--lime" %>
+    <%= link_to "Clear", profiles_path, class: "profile-btn profile-btn--outline" %>
+  <% end %>
+
+  <div class="profiles-results">
+    <div><span><%= @profiles.total_count %></span> profiles found</div>
+    <p>Sorted by rating</p>
+  </div>
+
+  <% if @profiles.any? %>
+    <section class="profile-card-grid"><%= render @profiles %></section>
+    <nav class="profile-pagination"><%= paginate @profiles %></nav>
+  <% else %>
+    <section class="profile-empty">
+      <span>◎</span><h2>No profiles matched</h2><p>Try widening the location, genre, or rate filters.</p>
+      <%= link_to "Reset search", profiles_path, class: "profile-btn profile-btn--lime" %>
+    </section>
+  <% end %>
+</main>

@@ -1,0 +1,78 @@
+<%= form_with model: profile, class: "profile-form" do |form| %>
+  <% if profile.errors.any? %>
+    <section class="profile-errors" aria-live="polite">
+      <strong><%= pluralize(profile.errors.count, "issue") %> stopped this profile from saving</strong>
+      <ul><% profile.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul>
+    </section>
+  <% end %>
+
+  <div class="profile-form__grid">
+    <section class="profile-panel">
+      <div class="profile-panel__header">
+        <div><span>01</span><h2>Public identity</h2></div>
+        <p>How clients see and discover you.</p>
+      </div>
+      <div class="profile-panel__body profile-fields">
+        <div class="profile-field profile-field--wide">
+          <%= form.label :bio_name, "Display name" %>
+          <%= form.text_field :bio_name, placeholder: "DJ Pressure" %>
+        </div>
+        <div class="profile-field profile-field--wide">
+          <%= form.label :slug, "Profile URL" %>
+          <div class="profile-input-prefix"><span>/profiles/</span><%= form.text_field :slug, placeholder: "dj-pressure" %></div>
+          <small>Lowercase letters, numbers, and hyphens work best.</small>
+        </div>
+        <% if profile.respond_to?(:bio) %>
+          <div class="profile-field profile-field--wide">
+            <%= form.label :bio, "Bio" %>
+            <%= form.text_area :bio, rows: 7, placeholder: "Tell venues and clients what makes your sound different…" %>
+          </div>
+        <% end %>
+        <div class="profile-field profile-field--wide">
+          <%= form.label :genres, "Genres" %>
+          <div class="profile-check-grid">
+            <%= form.collection_check_boxes :genres, Profile::GENRES, :to_s, ->(genre) { genre.titleize } do |box| %>
+              <%= box.label(class: "profile-check") { box.check_box + content_tag(:span, box.text) } %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="profile-form__side">
+      <section class="profile-panel">
+        <div class="profile-panel__header"><div><span>02</span><h2>Media</h2></div></div>
+        <div class="profile-panel__body">
+          <div class="profile-field">
+            <%= form.label :avatar, "Profile image" %>
+            <% if profile.avatar.attached? %>
+              <%= image_tag profile.avatar.variant(resize_to_fill: [480, 360]), class: "profile-upload-preview", alt: "" %>
+            <% end %>
+            <%= form.file_field :avatar, accept: "image/*" %>
+          </div>
+          <div class="profile-field">
+            <%= form.label :photos, "Gallery photos" %>
+            <%= form.file_field :photos, multiple: true, accept: "image/*" %>
+          </div>
+        </div>
+      </section>
+
+      <section class="profile-panel">
+        <div class="profile-panel__header"><div><span>03</span><h2>Booking</h2></div></div>
+        <div class="profile-panel__body profile-fields">
+          <div class="profile-field">
+            <%= form.label :hourly_rate, "Hourly rate" %>
+            <div class="profile-input-prefix"><span>$</span><%= form.number_field :hourly_rate, min: 0, step: 1, placeholder: "250" %></div>
+          </div>
+          <label class="profile-toggle"><%= form.check_box :available %><span></span><b>Accepting bookings</b></label>
+          <label class="profile-toggle"><%= form.check_box :published %><span></span><b>Publicly visible</b></label>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <div class="profile-form__actions">
+    <%= link_to "Cancel", profile.persisted? ? profile_path(profile.slug) : profiles_path, class: "profile-btn profile-btn--outline" %>
+    <%= form.submit profile.persisted? ? "Save changes" : "Create profile", class: "profile-btn profile-btn--lime" %>
+  </div>
+<% end %>

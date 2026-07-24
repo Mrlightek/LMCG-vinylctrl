@@ -1,6 +1,6 @@
 class DashboardsController < ApplicationController
   before_action :set_dashboard, only: %i[ show edit update destroy ]
-  allow_unauthenticated_access only: %i[ index show ]
+  #allow_unauthenticated_access only: %i[ index show ]
 
   # GET /dashboards or /dashboards.json
   def index
