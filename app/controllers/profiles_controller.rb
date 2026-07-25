@@ -18,7 +18,7 @@ class ProfilesController < ApplicationController
     @reviews = @profile.reviews.order(created_at: :desc).limit(10)
 
     if authenticated? && @profile.user != Current.user
-      @booking = Booking.new
+      @booking = Booking.new(talent: @profile.user)
     end
 
     @profile.increment!(:view_count)
