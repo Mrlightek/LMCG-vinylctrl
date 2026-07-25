@@ -23,7 +23,7 @@ class Booking < ApplicationRecord
   scope :this_month, -> { where(event_date: Time.current.beginning_of_month..Time.current.end_of_month) }
 
   before_validation :set_defaults
-  after_create      :send_notifications
+  after_create_commit :send_notifications
   after_update      :handle_status_change, if: :saved_change_to_status?
 
   def duration_hours

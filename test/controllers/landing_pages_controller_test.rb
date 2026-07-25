@@ -2,6 +2,7 @@ require "test_helper"
 
 class LandingPagesControllerTest < ActionDispatch::IntegrationTest
   setup do
+    sign_in_as users(:one)
     @landing_page = landing_pages(:one)
   end
 

@@ -31,13 +31,19 @@
       <span class="profile-availability <%= "is-offline" unless @profile.available? %>"><i></i><%= @profile.available? ? "Currently available" : "Not accepting bookings" %></span>
       <% if authenticated? && @booking %>
         <%= form_with model: @booking do |form| %>
-          <%= form.hidden_field :profile_id, value: @profile.id %>
+          <% if @booking.errors.any? %>
+            <div class="profile-errors"><%= @booking.errors.full_messages.to_sentence %></div>
+          <% end %>
+          <%= form.hidden_field :talent_id, value: @profile.user_id %>
           <%= form.label :event_date, "Event date" %><%= form.date_field :event_date %>
-          <%= form.label :message, "Tell them about the event" %><%= form.text_area :message, rows: 4 %>
+          <%= form.label :start_time, "Start time" %><%= form.time_field :start_time %>
+          <%= form.label :venue_name, "Venue name" %><%= form.text_field :venue_name %>
+          <%= form.label :event_type, "Event type" %><%= form.text_field :event_type %>
+          <%= form.label :client_notes, "Tell them about the event" %><%= form.text_area :client_notes, rows: 4 %>
           <%= form.submit "Request booking →", class: "profile-btn profile-btn--lime", disabled: !@profile.available? %>
         <% end %>
       <% else %>
-        <%= link_to "Sign in to book →", new_user_session_path, class: "profile-btn profile-btn--lime" %>
+        <%= link_to "Sign in to book →", new_session_path, class: "profile-btn profile-btn--lime" %>
       <% end %>
     </aside>
   </header>

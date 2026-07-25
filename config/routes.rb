@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
   resources :profiles, param: :slug do
-  resources :reviews, only: %i[create update destroy]
+  resources :reviews, only: :create
 end
   resources :landing_pages
   resources :dashboards
@@ -27,7 +27,7 @@ end
   get "/privacy",      to: "pages#privacy",   as: :privacy
   get "/terms",        to: "pages#terms",     as: :terms
   get "profiles", to: "profiles#show"
-  get "bookings", to: "booking#index"
+  resources :bookings, only: [:create]
 
     # Waitlist
   resources :waitlist_entries, only: [:create]
